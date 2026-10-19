@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { FileRecord } from '../types/simulator';
 import { IconX } from './Icons';
 
@@ -17,12 +17,19 @@ export const RenameFileDialog: React.FC<RenameFileDialogProps> = ({
 }) => {
   const [name, setName] = useState('');
 
+  useEffect(() => {
+    if (file && isOpen) {
+      setName(file.name);
+    }
+  }, [file, isOpen]);
+
   if (!isOpen || !file) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    onSubmit(file.id, name.trim());
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onSubmit(file.id, trimmed);
     onClose();
   };
 
@@ -45,7 +52,7 @@ export const RenameFileDialog: React.FC<RenameFileDialogProps> = ({
               <input
                 type="text"
                 className="form-input font-mono"
-                defaultValue={file.name}
+                value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 autoFocus

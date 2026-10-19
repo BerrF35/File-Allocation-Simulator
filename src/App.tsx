@@ -63,6 +63,7 @@ export const App: React.FC = () => {
   // Context Menus
   const [desktopContextMenu, setDesktopContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [fileContextMenu, setFileContextMenu] = useState<{ x: number; y: number; file: FileRecord } | null>(null);
+  const [binContextMenu, setBinContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   // Modals
   const [isNewFileOpen, setIsNewFileOpen] = useState(false);
@@ -306,7 +307,16 @@ export const App: React.FC = () => {
           timestamp: Date.now(),
         });
       } else {
-        alert(`Allocation Failed: ${result.errorMessage}`);
+        setPipelineSession({
+          operationType: 'save',
+          fileName: name,
+          method,
+          steps: result.steps,
+          currentStepIndex: result.steps.length - 1,
+          isSuccess: false,
+          errorReason: result.errorMessage,
+          timestamp: Date.now(),
+        });
       }
 
       // Smooth cinematic split transition
@@ -473,6 +483,7 @@ export const App: React.FC = () => {
   const handleGlobalClick = () => {
     if (desktopContextMenu) setDesktopContextMenu(null);
     if (fileContextMenu) setFileContextMenu(null);
+    if (binContextMenu) setBinContextMenu(null);
   };
 
   return (
@@ -491,13 +502,22 @@ export const App: React.FC = () => {
             onContextMenu={(e) => {
               e.preventDefault();
               setFileContextMenu(null);
+              setBinContextMenu(null);
               setDesktopContextMenu({ x: e.clientX, y: e.clientY });
             }}
             onFileContextMenu={(e, file) => {
               e.preventDefault();
               setDesktopContextMenu(null);
+              setBinContextMenu(null);
               setFileContextMenu({ x: e.clientX, y: e.clientY, file });
             }}
+            onBinContextMenu={(e) => {
+              e.preventDefault();
+              setDesktopContextMenu(null);
+              setFileContextMenu(null);
+              setBinContextMenu({ x: e.clientX, y: e.clientY });
+            }}
+            onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
             onOpenNewFile={() => setIsNewFileOpen(true)}
             isSplitView={isSplitView}
             onToggleSplitView={() => setIsSplitView(!isSplitView)}
@@ -614,6 +634,40 @@ export const App: React.FC = () => {
             <span className="win-context-icon">🗑️</span>
             <span className="win-context-text" style={{ color: '#ef4444' }}>
               Delete to Recycle Bin
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Recycle Bin Context Menu */}
+      {binContextMenu && (
+        <div
+          className="win-context-menu"
+          style={{ left: `${binContextMenu.x}px`, top: `${binContextMenu.y}px` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="win-context-item"
+            onClick={() => {
+              setIsRecycleBinOpen(true);
+              setBinContextMenu(null);
+            }}
+          >
+            <span className="win-context-icon">📂</span>
+            <span className="win-context-text" style={{ fontWeight: 600 }}>
+              Open Recycle Bin
+            </span>
+          </div>
+          <div
+            className="win-context-item danger"
+            onClick={() => {
+              handleEmptyBin();
+              setBinContextMenu(null);
+            }}
+          >
+            <span className="win-context-icon">🗑️</span>
+            <span className="win-context-text" style={{ color: '#ef4444' }}>
+              Empty Recycle Bin ({recycleBin.length})
             </span>
           </div>
         </div>

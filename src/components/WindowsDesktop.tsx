@@ -20,6 +20,8 @@ interface WindowsDesktopProps {
   onSelectFile: (fileId: string | null) => void;
   onContextMenu: (e: React.MouseEvent) => void;
   onFileContextMenu?: (e: React.MouseEvent, file: FileRecord) => void;
+  onBinContextMenu?: (e: React.MouseEvent) => void;
+  onOpenRecycleBin?: () => void;
   onDeleteFile?: (file: FileRecord) => void;
   onOpenNewFile: () => void;
   isSplitView: boolean;
@@ -36,6 +38,8 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
   onSelectFile,
   onContextMenu,
   onFileContextMenu,
+  onBinContextMenu,
+  onOpenRecycleBin,
   isSplitView,
   onToggleSplitView,
   recycleBinCount,
@@ -116,6 +120,9 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
             setSelectedSystemIcon('this-pc');
             onSelectFile(null);
           }}
+          onDoubleClick={() => {
+            if (onToggleSplitView && !isSplitView) onToggleSplitView();
+          }}
           onMouseEnter={(e) =>
             onHoverChat({
               title: 'This PC (Logical Volume)',
@@ -144,12 +151,21 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
             setSelectedSystemIcon('recycle-bin');
             onSelectFile(null);
           }}
+          onDoubleClick={() => {
+            if (onOpenRecycleBin) onOpenRecycleBin();
+          }}
+          onContextMenu={(e) => {
+            if (onBinContextMenu) {
+              e.stopPropagation();
+              onBinContextMenu(e);
+            }
+          }}
           onMouseEnter={(e) =>
             onHoverChat({
               title: 'Recycle Bin (Block Deallocation)',
               role: 'Storage Reclamation',
               explanation:
-                'When a file is deleted in an OS, its allocated sectors are reclaimed back into the Free Space Bitmap or Free Block List.',
+                'When a file is deleted in an OS, its allocated sectors are reclaimed back into the Free Space Bitmap or Free Block List. Double-click to open and restore files.',
               details: `Files pending purge: ${recycleBinCount}. Deallocation zeroes pointers and marks sectors as free.`,
               tradeOff: 'Fast delete only frees metadata pointers; data payload remains until overwritten.',
               x: e.clientX,
@@ -174,6 +190,9 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
             e.stopPropagation();
             setSelectedSystemIcon('explorer');
             onSelectFile(null);
+          }}
+          onDoubleClick={() => {
+            if (onToggleSplitView) onToggleSplitView();
           }}
           onMouseEnter={(e) =>
             onHoverChat({
@@ -219,6 +238,10 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
                 e.stopPropagation();
                 setSelectedSystemIcon(null);
                 onSelectFile(file.id);
+              }}
+              onDoubleClick={() => {
+                onSelectFile(file.id);
+                if (onToggleSplitView && !isSplitView) onToggleSplitView();
               }}
               onContextMenu={(e) => {
                 if (onFileContextMenu) {
