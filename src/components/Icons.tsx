@@ -18,7 +18,6 @@ export const IconFile: React.FC<IconProps> = ({ size = 16, className = '', style
     <polyline points="14 2 14 8 20 8"></polyline>
     <line x1="16" y1="13" x2="8" y2="13"></line>
     <line x1="16" y1="17" x2="8" y2="17"></line>
-    <polyline points="10 9 9 9 8 9"></polyline>
   </svg>
 );
 
@@ -99,14 +98,6 @@ export const IconInfo: React.FC<IconProps> = ({ size = 16, className = '', style
   </svg>
 );
 
-export const IconLayers: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-    <polyline points="2 17 12 22 22 17"></polyline>
-    <polyline points="2 12 12 17 22 12"></polyline>
-  </svg>
-);
-
 export const IconX: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -115,23 +106,8 @@ export const IconX: React.FC<IconProps> = ({ size = 16, className = '', style })
 );
 
 export const IconCheck: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
     <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
-
-export const IconExternalLink: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-    <polyline points="15 3 21 3 21 9"></polyline>
-    <line x1="10" y1="14" x2="21" y2="3"></line>
-  </svg>
-);
-
-export const IconLayout: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-    <line x1="12" y1="3" x2="12" y2="21"></line>
   </svg>
 );
 
@@ -147,5 +123,83 @@ export const IconCpu: React.FC<IconProps> = ({ size = 16, className = '', style 
     <line x1="20" y1="14" x2="23" y2="14"></line>
     <line x1="1" y1="9" x2="4" y2="9"></line>
     <line x1="1" y1="14" x2="4" y2="14"></line>
+  </svg>
+);
+
+/* Windows 11 Desktop Replica Icons */
+export const IconWindows11: React.FC<IconProps> = ({ size = 20, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#0078d4" className={className} style={style}>
+    <rect x="2" y="2" width="9.2" height="9.2" rx="1"></rect>
+    <rect x="12.8" y="2" width="9.2" height="9.2" rx="1"></rect>
+    <rect x="2" y="12.8" width="9.2" height="9.2" rx="1"></rect>
+    <rect x="12.8" y="12.8" width="9.2" height="9.2" rx="1"></rect>
+  </svg>
+);
+
+export const IconSearch: React.FC<IconProps> = ({ size = 16, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+
+export const IconThisPC: React.FC<IconProps> = ({ size = 32, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <rect x="6" y="8" width="36" height="24" rx="3" fill="#2563eb" stroke="#1d4ed8" strokeWidth="2"/>
+    <rect x="10" y="12" width="28" height="16" rx="1" fill="#60a5fa"/>
+    <rect x="18" y="32" width="12" height="4" fill="#64748b"/>
+    <rect x="14" y="36" width="20" height="3" rx="1.5" fill="#475569"/>
+  </svg>
+);
+
+export const IconWindowsTrash: React.FC<IconProps> = ({ size = 32, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <path d="M12 14L15 40C15.2 41.5 16.5 42 18 42H30C31.5 42 32.8 41.5 33 40L36 14" fill="#94a3b8" stroke="#64748b" strokeWidth="2"/>
+    <path d="M10 12H38V14H10V12Z" fill="#64748b"/>
+    <path d="M20 8H28V12H20V8Z" fill="#475569"/>
+    <line x1="20" y1="18" x2="20" y2="36" stroke="#f1f5f9" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="24" y1="18" x2="24" y2="36" stroke="#f1f5f9" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="28" y1="18" x2="28" y2="36" stroke="#f1f5f9" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+export const IconWindowsFolder: React.FC<IconProps> = ({ size = 32, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <path d="M8 12C8 10.9 8.9 10 10 10H20L24 14H38C39.1 14 40 14.9 40 16V36C40 37.1 39.1 38 38 38H10C8.9 38 8 37.1 8 36V12Z" fill="#f59e0b"/>
+    <path d="M8 18H40V36C40 37.1 39.1 38 38 38H10C8.9 38 8 37.1 8 36V18Z" fill="#fbbf24"/>
+  </svg>
+);
+
+export const IconWindowsTxt: React.FC<IconProps> = ({ size = 32, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <rect x="10" y="6" width="28" height="36" rx="2" fill="#ffffff" stroke="#cbd5e1" strokeWidth="1.5"/>
+    <rect x="14" y="14" width="20" height="2.5" rx="1" fill="#3b82f6"/>
+    <rect x="14" y="20" width="16" height="2" rx="1" fill="#94a3b8"/>
+    <rect x="14" y="25" width="20" height="2" rx="1" fill="#94a3b8"/>
+    <rect x="14" y="30" width="12" height="2" rx="1" fill="#94a3b8"/>
+  </svg>
+);
+
+export const IconEdge: React.FC<IconProps> = ({ size = 20, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className} style={style}>
+    <circle cx="24" cy="24" r="18" fill="#0078d4"/>
+    <path d="M24 12C18 12 12 18 12 24C12 30 18 36 24 36C30 36 36 30 36 24" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+  </svg>
+);
+
+export const IconWifi: React.FC<IconProps> = ({ size = 15, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+    <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+    <line x1="12" y1="20" x2="12.01" y2="20"></line>
+  </svg>
+);
+
+export const IconVolume: React.FC<IconProps> = ({ size = 15, className = '', style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
   </svg>
 );
