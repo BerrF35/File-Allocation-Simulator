@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { AllocationMethod, FileType, SimConfig } from '../types/simulator';
-import { IconFile, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface NewFileDialogProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
   method,
   config,
 }) => {
-  const [name, setName] = useState('notes.txt');
+  const [name, setName] = useState('lecture_notes.txt');
   const [type, setType] = useState<FileType>('TXT');
   const [unitMode, setUnitMode] = useState<'bytes' | 'blocks'>('bytes');
   const [sizeInput, setSizeInput] = useState('1450');
@@ -30,7 +30,6 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // Convert input to numeric bytes
   const numericVal = parseInt(sizeInput, 10) || 512;
   const sizeBytes = unitMode === 'blocks' ? numericVal * config.blockSize : numericVal;
   const requiredDataBlocks = Math.max(1, Math.ceil(sizeBytes / config.blockSize));
@@ -59,66 +58,65 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-newfile">
-      <div className="modal-card">
+      <div className="modal-dialog">
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-newfile">
-            <IconFile size={16} className="text-primary" />
-            <span>Create New Simulated File</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-newfile">
+            Create New File
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             {/* Quick Presets */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <span className="form-label" style={{ fontSize: '11px' }}>Quick Size Presets:</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span className="form-label">Presets</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 <button
                   type="button"
-                  className="btn-ui"
-                  style={{ padding: '3px 8px', fontSize: '11px' }}
+                  className="btn-ui subtle"
+                  style={{ padding: '3px 8px', fontSize: '11.5px', border: '1px solid var(--border-medium)' }}
                   onClick={() => handlePreset('quick_note.txt', 'TXT', 850)}
                 >
-                  Small Note (850B, 2 blk)
+                  Text note (850 B · 2 blk)
                 </button>
                 <button
                   type="button"
-                  className="btn-ui"
-                  style={{ padding: '3px 8px', fontSize: '11px' }}
+                  className="btn-ui subtle"
+                  style={{ padding: '3px 8px', fontSize: '11.5px', border: '1px solid var(--border-medium)' }}
                   onClick={() => handlePreset('os_report.pdf', 'PDF', 2200)}
                 >
-                  Medium PDF (2.2KB, 5 blk)
+                  Document (2.2 KB · 5 blk)
                 </button>
                 <button
                   type="button"
-                  className="btn-ui"
-                  style={{ padding: '3px 8px', fontSize: '11px' }}
-                  onClick={() => handlePreset('kernel_image.bin', 'BINARY', 4600)}
+                  className="btn-ui subtle"
+                  style={{ padding: '3px 8px', fontSize: '11.5px', border: '1px solid var(--border-medium)' }}
+                  onClick={() => handlePreset('kernel_dump.bin', 'BINARY', 4600)}
                 >
-                  Large Binary (4.6KB, 9 blk)
+                  Binary (4.6 KB · 9 blk)
                 </button>
               </div>
             </div>
 
-            {/* File Name & Type */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+            {/* Name & Type */}
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
               <div className="form-group">
-                <label className="form-label">File Name</label>
+                <label className="form-label">Filename</label>
                 <input
                   type="text"
                   className="form-input font-mono"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. document.txt"
+                  placeholder="document.txt"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">File Type</label>
+                <label className="form-label">Type</label>
                 <select
                   className="form-select"
                   value={type}
@@ -133,15 +131,15 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
               </div>
             </div>
 
-            {/* File Size & Unit Toggle */}
+            {/* File Size */}
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label className="form-label">Simulated File Size</label>
+                <label className="form-label">File Size</label>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   <button
                     type="button"
-                    className={`btn-ui ${unitMode === 'bytes' ? 'active-toggle' : ''}`}
-                    style={{ padding: '2px 6px', fontSize: '10px' }}
+                    className={`btn-ui ${unitMode === 'bytes' ? 'primary' : 'subtle'}`}
+                    style={{ padding: '2px 6px', fontSize: '10.5px' }}
                     onClick={() => {
                       setUnitMode('bytes');
                       setSizeInput(sizeBytes.toString());
@@ -151,8 +149,8 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
                   </button>
                   <button
                     type="button"
-                    className={`btn-ui ${unitMode === 'blocks' ? 'active-toggle' : ''}`}
-                    style={{ padding: '2px 6px', fontSize: '10px' }}
+                    className={`btn-ui ${unitMode === 'blocks' ? 'primary' : 'subtle'}`}
+                    style={{ padding: '2px 6px', fontSize: '10.5px' }}
                     onClick={() => {
                       setUnitMode('blocks');
                       setSizeInput(requiredDataBlocks.toString());
@@ -174,55 +172,42 @@ export const NewFileDialog: React.FC<NewFileDialogProps> = ({
               />
             </div>
 
-            {/* Real-time Block Geometry Preview Box */}
+            {/* Allocation Details */}
             <div
               style={{
-                background: 'var(--bg-subtle)',
-                border: '1px solid var(--border-medium)',
-                borderRadius: 'var(--radius-sm)',
                 padding: '10px 12px',
-                fontSize: '11px',
+                background: 'var(--bg-subtle)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.5,
               }}
             >
-              <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
-                Storage Allocation Geometry ({method.toUpperCase()}FS):
-              </strong>
-              <div style={{ color: 'var(--text-secondary)' }}>
-                • Physical Block Size: <strong>{config.blockSize} Bytes</strong>
-                <br />
-                • Data Blocks Required: <strong>{requiredDataBlocks} Data Block{requiredDataBlocks > 1 ? 's' : ''}</strong> (⌈{sizeBytes} / {config.blockSize}⌉)
-                {method === 'indexed' && (
-                  <span style={{ color: '#b45309', display: 'block' }}>
-                    • Index Overhead: <strong>+1 Dedicated Index Block</strong> (Total: {totalPhysicalBlocks} physical blocks)
-                  </span>
-                )}
-                {method === 'linked' && (
-                  <span style={{ color: 'var(--color-primary)', display: 'block' }}>
-                    • Linked Pointers: <strong>{requiredDataBlocks * config.pointerOverheadBytes} Bytes</strong> reserved across sector headers
-                  </span>
-                )}
-                • Internal Fragmentation: <strong>{internalFragBytes} Bytes</strong> unused in final block
+              <div>
+                Will allocate <strong>{requiredDataBlocks} data block{requiredDataBlocks > 1 ? 's' : ''}</strong>{' '}
+                {method === 'indexed' && <span style={{ color: '#b45309' }}>+ 1 index block ({totalPhysicalBlocks} blocks total)</span>}
+                {' '}under {method} allocation.
+              </div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '2px' }}>
+                {internalFragBytes} bytes internal slack in final block ({config.blockSize} B block size).
               </div>
             </div>
 
-            {/* Optional Sample Text for TXT files */}
             {type === 'TXT' && (
               <div className="form-group">
-                <label className="form-label">Optional Text Content</label>
+                <label className="form-label">Sample Text (optional)</label>
                 <textarea
                   className="form-input"
-                  style={{ height: '60px', resize: 'vertical', fontSize: '12px' }}
+                  style={{ height: '60px', resize: 'vertical' }}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Sample content..."
                 />
               </div>
             )}
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn-ui" onClick={onClose}>
+            <button type="button" className="btn-ui subtle" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="btn-ui primary">

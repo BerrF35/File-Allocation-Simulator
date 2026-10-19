@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { FileRecord } from '../types/simulator';
-import { IconFile, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface RenameFileDialogProps {
   file: FileRecord | null;
@@ -28,21 +28,20 @@ export const RenameFileDialog: React.FC<RenameFileDialogProps> = ({
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-rename">
-      <div className="modal-card">
+      <div className="modal-dialog">
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-rename">
-            <IconFile size={16} className="text-primary" />
-            <span>Rename File: {file.name}</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-rename">
+            Rename File
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-group">
-              <label className="form-label">New File Name</label>
+              <label className="form-label">New Filename</label>
               <input
                 type="text"
                 className="form-input font-mono"
@@ -51,14 +50,14 @@ export const RenameFileDialog: React.FC<RenameFileDialogProps> = ({
                 required
                 autoFocus
               />
-              <span className="form-hint">
-                Renaming modifies only the file system directory table entry; physical disk sectors remain untouched.
+              <span className="text-xs text-muted">
+                Renaming updates the directory table record. Physical disk sector addresses are unchanged.
               </span>
             </div>
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn-ui" onClick={onClose}>
+            <button type="button" className="btn-ui subtle" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="btn-ui primary">

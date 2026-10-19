@@ -1,6 +1,6 @@
 import React from 'react';
 import type { FileRecord } from '../types/simulator';
-import { IconTrash, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface RecycleBinModalProps {
   isOpen: boolean;
@@ -21,27 +21,25 @@ export const RecycleBinModal: React.FC<RecycleBinModalProps> = ({
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-bin">
-      <div className="modal-card">
+      <div className="modal-dialog">
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-bin">
-            <IconTrash size={16} className="text-warning" />
-            <span>Simulated OS Recycle Bin</span>
-            <span className="os-badge">{recycledFiles.length} item{recycledFiles.length === 1 ? '' : 's'}</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-bin">
+            Recycle Bin ({recycledFiles.length})
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
         <div className="modal-body">
           {recycledFiles.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-              Recycle bin is empty. No deleted files staged for recovery.
+              Recycle bin is empty.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                When files are deleted, their physical disk sectors are deallocated. Restoring a file will re-trigger the allocation pipeline under the currently active allocation method.
+              <p className="text-xs text-muted">
+                Restoring a file will re-allocate its required blocks on the disk under the currently active allocation method.
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -54,23 +52,22 @@ export const RecycleBinModal: React.FC<RecycleBinModalProps> = ({
                       justifyContent: 'space-between',
                       padding: '8px 12px',
                       background: 'var(--bg-subtle)',
-                      border: '1px solid var(--border-light)',
                       borderRadius: 'var(--radius-sm)',
                     }}
                   >
                     <div>
-                      <strong style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{f.name}</strong>
-                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                        {f.sizeBytes.toLocaleString()} Bytes ({f.requiredBlocks} Blocks) • Type: {f.type}
+                      <strong style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{f.name}</strong>
+                      <div className="text-xs text-muted">
+                        {f.sizeBytes.toLocaleString()} B · {f.requiredBlocks} blocks · {f.type}
                       </div>
                     </div>
 
                     <button
                       className="btn-ui primary"
-                      style={{ padding: '3px 8px', fontSize: '11px' }}
+                      style={{ padding: '3px 8px', fontSize: '12px' }}
                       onClick={() => onRestoreFile(f)}
                     >
-                      Restore to Disk
+                      Restore
                     </button>
                   </div>
                 ))}
@@ -82,10 +79,10 @@ export const RecycleBinModal: React.FC<RecycleBinModalProps> = ({
         <div className="modal-footer">
           {recycledFiles.length > 0 && (
             <button className="btn-ui danger" onClick={onEmptyBin}>
-              Empty Recycle Bin
+              Empty Bin
             </button>
           )}
-          <button className="btn-ui" onClick={onClose}>
+          <button className="btn-ui subtle" onClick={onClose}>
             Close
           </button>
         </div>

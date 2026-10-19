@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { AllocationMethod, FileRecord, SimConfig } from '../types/simulator';
-import { IconFile, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface ResizeFileDialogProps {
   file: FileRecord | null;
@@ -38,37 +38,30 @@ export const ResizeFileDialog: React.FC<ResizeFileDialogProps> = ({
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-resize">
-      <div className="modal-card">
+      <div className="modal-dialog">
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-resize">
-            <IconFile size={16} className="text-primary" />
-            <span>Resize File: {file.name}</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-resize">
+            Resize &ldquo;{file.name}&rdquo;
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div className="stat-box">
-                <div className="stat-label">Current Size</div>
-                <div className="stat-value font-mono">{currentSize.toLocaleString()} Bytes</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{currentBlocks} blocks allocated</div>
-              </div>
-
-              <div className="stat-box">
-                <div className="stat-label">Block Allocation Method</div>
-                <div className="stat-value" style={{ textTransform: 'capitalize' }}>
-                  {method}
-                </div>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{config.blockSize} B/block</div>
-              </div>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '12.5px', color: 'var(--text-secondary)' }}>
+              <span>
+                Current size: <strong>{currentSize.toLocaleString()} B</strong> ({currentBlocks} blocks)
+              </span>
+              <span>·</span>
+              <span>
+                Method: <strong>{method}</strong>
+              </span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">New Logical File Size (Bytes)</label>
+              <label className="form-label">New Size in Bytes</label>
               <input
                 type="number"
                 min="1"
@@ -78,47 +71,43 @@ export const ResizeFileDialog: React.FC<ResizeFileDialogProps> = ({
                 onChange={(e) => setNewSizeInput(e.target.value)}
                 required
               />
-              <span className="form-hint">
-                New blocks required: <strong>{targetBlocks} blocks</strong> (Delta: {blockDelta >= 0 ? `+${blockDelta}` : blockDelta} blocks)
+              <span className="text-xs text-muted">
+                Requires {targetBlocks} blocks ({blockDelta >= 0 ? `+${blockDelta}` : blockDelta} blocks delta)
               </span>
             </div>
 
-            {/* Educational behavior preview */}
             <div
               style={{
-                background: 'var(--bg-subtle)',
-                border: '1px solid var(--border-medium)',
-                borderRadius: 'var(--radius-sm)',
                 padding: '10px 12px',
-                fontSize: '11px',
+                background: 'var(--bg-subtle)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '12px',
+                color: 'var(--text-secondary)',
                 lineHeight: 1.5,
               }}
             >
-              <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
-                How {method.toUpperCase()} allocation handles resizing:
-              </strong>
               {method === 'contiguous' ? (
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  If growing: The OS will check if the adjacent blocks directly after block #{file.startBlock + file.length - 1} are currently free. If another file occupies the adjacent block, <strong>in-place expansion will FAIL</strong> with a collision!
-                </p>
+                <span>
+                  <strong>Contiguous allocation:</strong> Growing requires the adjacent physical sectors immediately following this file to be unallocated. If occupied, in-place expansion will fail.
+                </span>
               ) : method === 'linked' ? (
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  If growing: The OS will harvest any free blocks across the disk and link them onto the end of the existing chain at block #{file.endBlock}.
-                </p>
+                <span>
+                  <strong>Linked allocation:</strong> New blocks will be appended to the end of the pointer chain using any available free sectors.
+                </span>
               ) : (
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  If growing: The OS will claim free blocks and append their addresses to Index Block #{file.indexBlockId}. Fails only if disk is full or index block capacity ({config.indexBlockCapacity}) is exceeded.
-                </p>
+                <span>
+                  <strong>Indexed allocation:</strong> New block addresses will be added to Index Block #{file.indexBlockId}.
+                </span>
               )}
             </div>
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn-ui" onClick={onClose}>
+            <button type="button" className="btn-ui subtle" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="btn-ui primary">
-              Commit Resize Operation
+              Apply Resize
             </button>
           </div>
         </form>

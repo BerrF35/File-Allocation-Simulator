@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { FileRecord, SimConfig } from '../types/simulator';
 import { runComparativeSimulation } from '../core/simulatorEngine';
-import { IconHardDrive, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface ComparisonViewModalProps {
   isOpen: boolean;
@@ -20,157 +20,147 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Run isolated simulation for all 3 methods with active files
   const comparisonResults = runComparativeSimulation(files, config);
   const selectedResult = comparisonResults.find((r) => r.method === activeTab)!;
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-compare">
-      <div className="modal-card wide" style={{ maxWidth: '960px' }}>
+      <div className="modal-dialog wide" style={{ maxWidth: '860px' }}>
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-compare">
-            <IconHardDrive size={16} className="text-primary" />
-            <span>Multi-Method Architectural Comparison (Isolated Simulation States)</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-compare">
+            Workload Comparison (Contiguous vs Linked vs Indexed)
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
         <div className="modal-body">
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            The current active workload of {files.length} file{files.length === 1 ? '' : 's'} has been simulated simultaneously across three completely isolated simulated disk volumes. Review how the identical file set behaves under Contiguous, Linked, and Indexed allocation.
+          <p className="text-sm text-muted">
+            The active set of {files.length} file{files.length === 1 ? '' : 's'} is simulated simultaneously across three isolated disk volumes. Observe how identical files produce different block placements and trade-offs.
           </p>
 
-          {/* Comparative Matrix Table */}
-          <div className="file-table-container" style={{ border: '1px solid var(--border-medium)', borderRadius: 'var(--radius-sm)' }}>
-            <table className="file-table" style={{ fontSize: '11px' }}>
+          {/* Comparative Table */}
+          <div style={{ border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+            <table className="file-table" style={{ fontSize: '12.5px' }}>
               <thead>
                 <tr>
-                  <th>Allocation Metric</th>
-                  <th>Contiguous Allocation</th>
-                  <th>Linked Allocation</th>
-                  <th>Indexed Allocation</th>
+                  <th style={{ width: '28%' }}>Metric</th>
+                  <th style={{ width: '24%' }}>Contiguous</th>
+                  <th style={{ width: '24%' }}>Linked</th>
+                  <th style={{ width: '24%' }}>Indexed</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td><strong>Allocation Feasibility</strong></td>
+                  <td><strong>Feasibility</strong></td>
                   <td>
                     {comparisonResults[0].files.length === files.length ? (
-                      <span className="text-success font-medium">All {files.length} Files Placed</span>
+                      <span className="text-success font-medium">All {files.length} files allocated</span>
                     ) : (
                       <span className="text-danger font-medium">
-                        {comparisonResults[0].files.length}/{files.length} Placed (Fragmentation)
+                        {comparisonResults[0].files.length}/{files.length} (Fragmentation)
                       </span>
                     )}
                   </td>
                   <td>
                     <span className="text-success font-medium">
-                      {comparisonResults[1].files.length}/{files.length} Placed
+                      {comparisonResults[1].files.length}/{files.length} files allocated
                     </span>
                   </td>
                   <td>
                     <span className="text-success font-medium">
-                      {comparisonResults[2].files.length}/{files.length} Placed
+                      {comparisonResults[2].files.length}/{files.length} files allocated
                     </span>
                   </td>
                 </tr>
 
                 <tr>
-                  <td><strong>Total Blocks Consumed</strong></td>
-                  <td className="font-mono">{comparisonResults[0].stats.occupiedBlocks} Blocks</td>
-                  <td className="font-mono">{comparisonResults[1].stats.occupiedBlocks} Blocks</td>
+                  <td><strong>Blocks Consumed</strong></td>
+                  <td className="font-mono">{comparisonResults[0].stats.occupiedBlocks} blocks</td>
+                  <td className="font-mono">{comparisonResults[1].stats.occupiedBlocks} blocks</td>
                   <td className="font-mono">
-                    {comparisonResults[2].stats.occupiedBlocks} Blocks{' '}
-                    <span style={{ color: '#d97706', fontSize: '10px' }}>(Includes Index Blocks)</span>
+                    {comparisonResults[2].stats.occupiedBlocks} blocks{' '}
+                    <span className="text-muted" style={{ fontSize: '11px' }}>(+index blocks)</span>
                   </td>
                 </tr>
 
                 <tr>
-                  <td><strong>Volume Space Utilization</strong></td>
-                  <td className="font-mono">{comparisonResults[0].stats.utilizationPercent}%</td>
-                  <td className="font-mono">{comparisonResults[1].stats.utilizationPercent}%</td>
-                  <td className="font-mono">{comparisonResults[2].stats.utilizationPercent}%</td>
+                  <td><strong>Sequential Read</strong></td>
+                  <td>Maximum (zero seek hops)</td>
+                  <td>Moderate (sequential seeks)</td>
+                  <td>Fast (sequential via index)</td>
                 </tr>
 
                 <tr>
-                  <td><strong>Sequential Read Throughput</strong></td>
-                  <td className="text-success font-medium">Maximum (Zero head seeks)</td>
-                  <td className="text-warning font-medium">Moderate (Sequential chain seeks)</td>
-                  <td className="text-success font-medium">High (Sequential via index)</td>
+                  <td><strong>Random Access</strong></td>
+                  <td>O(1) Instant (Start + Offset)</td>
+                  <td>O(k) Slow (traverse chain)</td>
+                  <td>O(1) Fast (1 index + 1 data read)</td>
                 </tr>
 
                 <tr>
-                  <td><strong>Direct / Random Access Time</strong></td>
-                  <td className="text-success font-medium">O(1) Instant (Start + Offset)</td>
-                  <td className="text-danger font-medium">O(N) Slow (Must traverse chain)</td>
-                  <td className="text-success font-medium">O(1) Fast (1 Index + 1 Data Read)</td>
+                  <td><strong>External Fragmentation</strong></td>
+                  <td><span className="text-danger">High vulnerability</span></td>
+                  <td><span className="text-success">None (scatters anywhere)</span></td>
+                  <td><span className="text-success">None (scatters anywhere)</span></td>
                 </tr>
 
                 <tr>
-                  <td><strong>External Fragmentation Risk</strong></td>
-                  <td className="text-danger font-medium">HIGH (Requires contiguous runs)</td>
-                  <td className="text-success font-medium">NONE (Scatters anywhere)</td>
-                  <td className="text-success font-medium">NONE (Scatters anywhere)</td>
+                  <td><strong>Dynamic Growth</strong></td>
+                  <td>Collides with neighbors</td>
+                  <td>Effortless append</td>
+                  <td>Good (bounded by index table)</td>
                 </tr>
 
                 <tr>
-                  <td><strong>Dynamic File Growth Flexibility</strong></td>
-                  <td className="text-danger font-medium">Poor (Collides with neighbors)</td>
-                  <td className="text-success font-medium">Excellent (Grows anywhere)</td>
-                  <td className="text-warning font-medium">Good (Bounded by index table)</td>
-                </tr>
-
-                <tr>
-                  <td><strong>Metadata / Pointer Overhead</strong></td>
-                  <td className="text-success font-medium">Minimal (2 numbers in directory)</td>
-                  <td className="text-warning font-medium">4B per block in sector header</td>
-                  <td className="text-warning font-medium">1 Dedicated Index Block per file</td>
+                  <td><strong>Metadata Overhead</strong></td>
+                  <td>2 numbers in directory</td>
+                  <td>4B pointer per block header</td>
+                  <td>1 full index block per file</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Isolated Disk Preview Selector */}
-          <div style={{ marginTop: '12px' }}>
+          {/* Mini Layout Inspector */}
+          <div style={{ marginTop: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <strong style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
-                Inspect Isolated Disk Layout for:
-              </strong>
+              <span className="text-sm font-medium">
+                Simulated disk layout:
+              </span>
 
               <div className="method-segmented-control">
                 <button
                   className={`method-btn ${activeTab === 'contiguous' ? 'active' : ''}`}
                   onClick={() => setActiveTab('contiguous')}
                 >
-                  Contiguous Layout
+                  Contiguous
                 </button>
                 <button
                   className={`method-btn ${activeTab === 'linked' ? 'active' : ''}`}
                   onClick={() => setActiveTab('linked')}
                 >
-                  Linked Layout
+                  Linked
                 </button>
                 <button
                   className={`method-btn ${activeTab === 'indexed' ? 'active' : ''}`}
                   onClick={() => setActiveTab('indexed')}
                 >
-                  Indexed Layout
+                  Indexed
                 </button>
               </div>
             </div>
 
-            {/* Mini Disk Visualization for Selected Method */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(16, 1fr)',
-                gap: '4px',
-                background: '#f8fafc',
-                padding: '10px',
+                gap: '3px',
+                background: 'var(--bg-subtle)',
+                padding: '8px',
                 borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-medium)',
+                border: '1px solid var(--border-light)',
               }}
             >
               {selectedResult.disk.map((b) => {
@@ -179,7 +169,7 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
                 return (
                   <div
                     key={b.id}
-                    className="font-mono"
+                    className="font-mono text-xs"
                     style={{
                       aspectRatio: 1,
                       display: 'flex',
@@ -190,18 +180,18 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
                       background: isFree
                         ? '#ffffff'
                         : isIdx
-                        ? '#fef3c7'
-                        : `${b.fileColor}25` || '#dbeafe',
+                        ? '#fffbeb'
+                        : `${b.fileColor}20` || '#e0e7ff',
                       border: isFree
-                        ? '1px dashed var(--border-medium)'
+                        ? '1px solid #e7e7e4'
                         : isIdx
-                        ? '1.5px solid #d97706'
-                        : `1.5px solid ${b.fileColor || '#2563eb'}`,
+                        ? '1px solid #f59e0b'
+                        : `1px solid ${b.fileColor || '#1d4ed8'}`,
                       color: isFree
                         ? 'var(--text-faint)'
                         : isIdx
                         ? '#b45309'
-                        : b.fileColor || '#1e40af',
+                        : b.fileColor || '#1d4ed8',
                       fontWeight: 600,
                     }}
                     title={
@@ -209,7 +199,7 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
                         ? `Block #${b.id}: Free`
                         : isIdx
                         ? `Block #${b.id}: Index block for ${b.fileName}`
-                        : `Block #${b.id}: ${b.fileName} (Offset ${b.blockOffset})`
+                        : `Block #${b.id}: ${b.fileName}`
                     }
                   >
                     {isFree ? b.id : isIdx ? 'IDX' : b.fileTag}
@@ -221,8 +211,8 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
         </div>
 
         <div className="modal-footer">
-          <button className="btn-ui" onClick={onClose}>
-            Close Comparison
+          <button className="btn-ui subtle" onClick={onClose}>
+            Close
           </button>
         </div>
       </div>

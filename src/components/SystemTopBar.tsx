@@ -1,15 +1,6 @@
 import React from 'react';
 import type { AllocationMethod, DiskStats } from '../types/simulator';
-import {
-  IconHardDrive,
-  IconPlus,
-  IconLayers,
-  IconInfo,
-  IconRotateCcw,
-  IconLayout,
-  IconTrash,
-  IconCpu,
-} from './Icons';
+import { IconCpu, IconPlus, IconRotateCcw } from './Icons';
 
 interface SystemTopBarProps {
   method: AllocationMethod;
@@ -29,7 +20,6 @@ interface SystemTopBarProps {
 export const SystemTopBar: React.FC<SystemTopBarProps> = ({
   method,
   onSelectMethod,
-  stats,
   isSplitView,
   onToggleView,
   onOpenNewFile,
@@ -44,27 +34,28 @@ export const SystemTopBar: React.FC<SystemTopBarProps> = ({
     <header className="system-topbar" role="banner">
       <div className="topbar-left">
         <div className="system-brand">
-          <IconCpu size={18} className="text-primary" />
-          <span>AetherOS</span>
-          <span className="os-badge">FS-SIM v4.2</span>
+          <div className="brand-icon">
+            <IconCpu size={14} />
+          </div>
+          <span>File Allocation Simulator</span>
         </div>
 
         <div className="student-tag">
-          <span>Student:</span>
-          <strong>Jaijitesh Suryaprakash (25BIT0235)</strong>
-          <span>• Course: <strong>OS Principles</strong></span>
+          <span>Jaijitesh Suryaprakash (25BIT0235)</span>
+          <span>·</span>
+          <span>OS Principles</span>
         </div>
       </div>
 
       <div className="topbar-center">
-        {/* Method Segmented Control */}
-        <div className="method-segmented-control" role="tablist" aria-label="File Allocation Method">
+        {/* Simple, clear segmented control */}
+        <div className="method-segmented-control" role="tablist" aria-label="Allocation Method">
           <button
             role="tab"
             aria-selected={method === 'contiguous'}
             className={`method-btn ${method === 'contiguous' ? 'active' : ''}`}
             onClick={() => onSelectMethod('contiguous')}
-            title="Contiguous Allocation: Stores files in consecutive physical blocks. Direct access, but causes external fragmentation."
+            title="Contiguous: stores files in consecutive disk blocks"
           >
             Contiguous
           </button>
@@ -73,7 +64,7 @@ export const SystemTopBar: React.FC<SystemTopBarProps> = ({
             aria-selected={method === 'linked'}
             className={`method-btn ${method === 'linked' ? 'active' : ''}`}
             onClick={() => onSelectMethod('linked')}
-            title="Linked Allocation: Each block stores a pointer to the next block. No external fragmentation, but slow sequential traversal."
+            title="Linked: files occupy scattered blocks linked by pointers"
           >
             Linked
           </button>
@@ -82,89 +73,49 @@ export const SystemTopBar: React.FC<SystemTopBarProps> = ({
             aria-selected={method === 'indexed'}
             className={`method-btn ${method === 'indexed' ? 'active' : ''}`}
             onClick={() => onSelectMethod('indexed')}
-            title="Indexed Allocation: Dedicated index block stores pointers to all data blocks. Direct access + no external fragmentation."
+            title="Indexed: dedicated index block stores pointers to data blocks"
           >
             Indexed
           </button>
         </div>
-
-        {/* Disk Quick Status Badge */}
-        <div
-          className="os-badge"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          title={`Disk Capacity: ${stats.occupiedBlocks} of ${stats.totalBlocks} blocks occupied (${stats.utilizationPercent}%)`}
-        >
-          <IconHardDrive size={13} className="text-muted" />
-          <span>
-            {stats.occupiedBlocks}/{stats.totalBlocks} Blk ({stats.utilizationPercent}%)
-          </span>
-        </div>
       </div>
 
       <div className="topbar-right">
-        <button
-          className="btn-ui primary"
-          onClick={onOpenNewFile}
-          title="Create a new simulated file on disk"
-        >
+        {/* The single clear primary action */}
+        <button className="btn-ui primary" onClick={onOpenNewFile}>
           <IconPlus size={14} />
           <span>New File</span>
         </button>
 
-        <button
-          className="btn-ui"
-          onClick={onOpenScenarios}
-          title="Load pre-built OS teaching scenarios (Fragmentation, Pointer traversal, Growth collision)"
-        >
-          <IconLayers size={14} />
-          <span>Scenarios</span>
+        {/* Secondary actions as clean, quiet buttons */}
+        <button className="btn-ui subtle" onClick={onOpenScenarios} title="Pre-configured lab experiments">
+          Scenarios
         </button>
 
-        <button
-          className="btn-ui"
-          onClick={onOpenComparison}
-          title="Compare the same file operations side-by-side across Contiguous, Linked, and Indexed"
-        >
-          <span style={{ fontWeight: 700, fontSize: '11px' }}>3×</span>
-          <span>Compare Methods</span>
-        </button>
-
-        <button
-          className={`btn-ui ${isSplitView ? 'active-toggle' : ''}`}
-          onClick={onToggleView}
-          title={isSplitView ? 'Switch to Desktop Mode' : 'Switch to Split Learning View'}
-        >
-          <IconLayout size={14} />
-          <span>{isSplitView ? 'Split View' : 'Desktop View'}</span>
+        <button className="btn-ui subtle" onClick={onOpenComparison} title="Compare all three methods on the same workload">
+          Compare (3×)
         </button>
 
         {recycleBinCount > 0 && (
-          <button
-            className="btn-ui"
-            onClick={onOpenRecycleBin}
-            title={`${recycleBinCount} deleted file${recycleBinCount > 1 ? 's' : ''} in recycle bin`}
-          >
-            <IconTrash size={14} className="text-warning" />
-            <span>Bin ({recycleBinCount})</span>
+          <button className="btn-ui subtle" onClick={onOpenRecycleBin}>
+            Trash ({recycleBinCount})
           </button>
         )}
 
         <button
-          className="btn-ui"
-          onClick={onOpenAbout}
-          title="Project Information, Allocation Theory & Glossary"
+          className="btn-ui subtle"
+          onClick={onToggleView}
+          title={isSplitView ? 'Switch to Desktop Mode' : 'Switch to Split Learning Mode'}
         >
-          <IconInfo size={14} />
-          <span>About</span>
+          {isSplitView ? 'Desktop' : 'Split View'}
         </button>
 
-        <button
-          className="btn-ui danger"
-          onClick={onResetDisk}
-          title="Wipe and format simulated disk blocks"
-        >
-          <IconRotateCcw size={14} />
-          <span>Reset</span>
+        <button className="btn-ui subtle" onClick={onOpenAbout} title="Principles of file allocation and project info">
+          About
+        </button>
+
+        <button className="btn-ui subtle" onClick={onResetDisk} title="Reset simulated disk">
+          <IconRotateCcw size={13} />
         </button>
       </div>
     </header>

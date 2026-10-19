@@ -1,11 +1,6 @@
 import React from 'react';
 import type { AllocationMethod, FileRecord, SimConfig } from '../types/simulator';
-import {
-  IconFolder,
-  IconFile,
-  IconPlus,
-  IconTrash,
-} from './Icons';
+import { IconFolder, IconPlus, IconTrash } from './Icons';
 
 interface FileManagerWindowProps {
   files: FileRecord[];
@@ -32,112 +27,97 @@ export const FileManagerWindow: React.FC<FileManagerWindowProps> = ({
   const selectedFile = files.find((f) => f.id === selectedFileId) || null;
 
   return (
-    <div className="os-window" aria-label="Simulated File Manager">
-      <div className="window-titlebar">
-        <div className="window-title">
-          <IconFolder size={15} className="text-primary" />
-          <span>Simulated File Manager — /root/storage</span>
-          <span className="os-badge">{files.length} Item{files.length === 1 ? '' : 's'}</span>
-        </div>
+    <div className="workspace-section">
+      <div className="section-header">
+        <h3 className="section-title">
+          <span>Files on Disk</span>
+          <span className="text-xs text-muted" style={{ fontWeight: 400 }}>
+            ({files.length} item{files.length === 1 ? '' : 's'})
+          </span>
+        </h3>
 
-        <div className="window-actions">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {selectedFile && (
+            <>
+              <button
+                className="btn-ui subtle"
+                style={{ padding: '3px 8px', fontSize: '12px' }}
+                onClick={() => onResizeFile(selectedFile)}
+              >
+                Resize
+              </button>
+              <button
+                className="btn-ui subtle"
+                style={{ padding: '3px 8px', fontSize: '12px' }}
+                onClick={() => onRenameFile(selectedFile)}
+              >
+                Rename
+              </button>
+              <button
+                className="btn-ui subtle"
+                style={{ padding: '3px 8px', fontSize: '12px', color: 'var(--color-danger)' }}
+                onClick={() => onDeleteFile(selectedFile)}
+              >
+                <IconTrash size={13} />
+                <span>Delete</span>
+              </button>
+              <span style={{ color: 'var(--border-medium)', margin: '0 2px' }}>|</span>
+            </>
+          )}
+
           <button
-            className="btn-ui primary"
-            style={{ padding: '3px 8px', fontSize: '11px' }}
+            className="btn-ui"
+            style={{ padding: '4px 10px', fontSize: '12.5px' }}
             onClick={onOpenNewFile}
           >
-            <IconPlus size={12} />
+            <IconPlus size={13} />
             <span>New File</span>
           </button>
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="window-toolbar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button
-            className="btn-ui"
-            disabled={!selectedFile}
-            onClick={() => selectedFile && onResizeFile(selectedFile)}
-            title="Modify file size (grow or shrink)"
-          >
-            <span>Resize</span>
-          </button>
-
-          <button
-            className="btn-ui"
-            disabled={!selectedFile}
-            onClick={() => selectedFile && onRenameFile(selectedFile)}
-            title="Rename file"
-          >
-            <span>Rename</span>
-          </button>
-
-          <button
-            className="btn-ui danger"
-            disabled={!selectedFile}
-            onClick={() => selectedFile && onDeleteFile(selectedFile)}
-            title="Delete file and reclaim blocks"
-          >
-            <IconTrash size={13} />
-            <span>Delete</span>
-          </button>
-        </div>
-
-        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-          {selectedFile ? (
-            <span>
-              Selected: <strong>{selectedFile.name}</strong> ({selectedFile.sizeBytes} B)
-            </span>
-          ) : (
-            <span>Click a file row to select</span>
-          )}
-        </div>
-      </div>
-
-      {/* File List Table */}
-      <div className="file-table-container">
+      <div className="file-list-card">
         {files.length === 0 ? (
           <div
             style={{
-              padding: '32px 16px',
+              padding: '36px 20px',
               textAlign: 'center',
               color: 'var(--text-muted)',
             }}
           >
-            <IconFolder size={32} className="text-muted" style={{ marginBottom: '8px', opacity: 0.5 }} />
-            <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              No files stored on the simulated disk
+            <IconFolder size={28} className="text-muted" style={{ marginBottom: '8px', opacity: 0.4 }} />
+            <p style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--text-secondary)' }}>
+              No files on disk yet
             </p>
-            <p style={{ fontSize: '11px', marginTop: '4px' }}>
-              Click <strong>&ldquo;New File&rdquo;</strong> to create your first file or select an educational scenario above.
+            <p style={{ fontSize: '12px', marginTop: '4px' }}>
+              Click <strong>&ldquo;New File&rdquo;</strong> above to create and save your first file.
             </p>
           </div>
         ) : (
           <table className="file-table">
             <thead>
               <tr>
-                <th style={{ width: '35%' }}>File Name</th>
-                <th style={{ width: '10%' }}>Type</th>
-                <th style={{ width: '20%' }}>Size</th>
-                <th style={{ width: '25%' }}>Disk Block Allocation</th>
-                <th style={{ width: '10%', textAlign: 'right' }}>Actions</th>
+                <th style={{ width: '42%' }}>Name</th>
+                <th style={{ width: '18%' }}>Size</th>
+                <th style={{ width: '28%' }}>Allocation Layout</th>
+                <th style={{ width: '12%', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {files.map((file) => {
                 const isSelected = selectedFileId === file.id;
 
-                let blockAllocationDisplay: React.ReactNode;
+                let layoutDisplay: React.ReactNode;
                 if (method === 'contiguous') {
-                  blockAllocationDisplay = (
-                    <span className="font-mono text-primary" style={{ fontSize: '11px' }}>
-                      Start: #{file.startBlock}, Len: {file.length} [{file.allocatedBlocks.join('..')}]
+                  layoutDisplay = (
+                    <span className="font-mono text-xs">
+                      Start #{file.startBlock} · {file.length} blocks [
+                      {file.allocatedBlocks.join('..')}]
                     </span>
                   );
                 } else if (method === 'linked') {
-                  blockAllocationDisplay = (
-                    <span className="font-mono text-primary" style={{ fontSize: '11px' }}>
+                  layoutDisplay = (
+                    <span className="font-mono text-xs">
                       {file.allocatedBlocks.map((b, i) => (
                         <React.Fragment key={b}>
                           #{b}
@@ -148,10 +128,10 @@ export const FileManagerWindow: React.FC<FileManagerWindowProps> = ({
                   );
                 } else {
                   // Indexed
-                  blockAllocationDisplay = (
-                    <span className="font-mono" style={{ fontSize: '11px' }}>
-                      <strong style={{ color: '#d97706' }}>Index: #{file.indexBlockId}</strong> ➔ [
-                      {file.allocatedBlocks.join(', ')}]
+                  layoutDisplay = (
+                    <span className="font-mono text-xs">
+                      <span style={{ color: '#b45309', fontWeight: 500 }}>Index #{file.indexBlockId}</span>
+                      <span> ➔ [{file.allocatedBlocks.join(', ')}]</span>
                     </span>
                   );
                 }
@@ -166,39 +146,28 @@ export const FileManagerWindow: React.FC<FileManagerWindowProps> = ({
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span
-                          className="file-tag-badge"
+                          className="file-color-dot"
                           style={{ backgroundColor: file.color }}
-                        >
-                          {file.tag}
+                        />
+                        <strong style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+                          {file.name}
+                        </strong>
+                        <span className="text-xs text-muted" style={{ marginLeft: '8px' }}>
+                          {file.type}
                         </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <IconFile size={15} className="text-muted" />
-                          <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
-                            {file.name}
-                          </strong>
-                        </div>
                       </div>
                     </td>
 
                     <td>
-                      <span className="os-badge" style={{ fontSize: '10px' }}>
-                        {file.type}
+                      <span className="font-mono text-xs">
+                        {file.sizeBytes.toLocaleString()} B
+                      </span>
+                      <span className="text-xs text-muted" style={{ marginLeft: '4px' }}>
+                        ({file.requiredBlocks} blk{method === 'indexed' ? ' + 1 idx' : ''})
                       </span>
                     </td>
 
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span className="font-mono" style={{ fontWeight: 600 }}>
-                          {file.sizeBytes.toLocaleString()} Bytes
-                        </span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                          {file.requiredBlocks} Data Block{file.requiredBlocks > 1 ? 's' : ''}
-                          {method === 'indexed' ? ' + 1 Index' : ''}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td>{blockAllocationDisplay}</td>
+                    <td>{layoutDisplay}</td>
 
                     <td style={{ textAlign: 'right' }}>
                       <div
@@ -206,20 +175,20 @@ export const FileManagerWindow: React.FC<FileManagerWindowProps> = ({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <button
-                          className="btn-ui"
-                          style={{ padding: '2px 5px', fontSize: '11px' }}
+                          className="btn-ui subtle"
+                          style={{ padding: '2px 6px', fontSize: '11.5px' }}
                           onClick={() => onResizeFile(file)}
                           title="Resize file"
                         >
                           Resize
                         </button>
                         <button
-                          className="btn-ui danger"
-                          style={{ padding: '2px 5px', fontSize: '11px' }}
+                          className="btn-ui subtle"
+                          style={{ padding: '2px 6px', fontSize: '11.5px', color: 'var(--color-danger)' }}
                           onClick={() => onDeleteFile(file)}
                           title="Delete file"
                         >
-                          <IconTrash size={12} />
+                          <IconTrash size={13} />
                         </button>
                       </div>
                     </td>

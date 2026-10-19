@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconInfo, IconX } from './Icons';
+import { IconX } from './Icons';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -11,134 +11,92 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-about">
-      <div className="modal-card wide" style={{ maxWidth: '800px' }}>
+      <div className="modal-dialog wide" style={{ maxWidth: '780px' }}>
         <div className="modal-header">
-          <div className="modal-title" id="modal-title-about">
-            <IconInfo size={16} className="text-primary" />
-            <span>About this Simulation & Technical Documentation</span>
-          </div>
-          <button onClick={onClose} title="Close" style={{ color: 'var(--text-muted)' }}>
-            <IconX size={16} />
+          <h2 className="modal-title" id="modal-title-about">
+            Project Overview & Operating System Principles
+          </h2>
+          <button onClick={onClose} className="btn-ui subtle" style={{ padding: '2px 4px' }} title="Close">
+            <IconX size={15} />
           </button>
         </div>
 
-        <div className="modal-body" style={{ gap: '16px' }}>
-          {/* Academic Attribution Card */}
+        <div className="modal-body" style={{ gap: '20px' }}>
+          {/* Academic Info */}
           <div
             style={{
-              background: 'var(--color-primary-bg)',
-              border: '1px solid var(--color-primary-border)',
-              borderRadius: 'var(--radius-md)',
               padding: '12px 16px',
+              background: 'var(--bg-subtle)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '13px',
               display: 'flex',
               flexDirection: 'column',
               gap: '4px',
             }}
           >
-            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)' }}>
-              Operating System Principles — Academic Mini-Project
+            <div>
+              <strong>Course:</strong> Operating System Principles
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+            <div>
+              <strong>Student:</strong> Jaijitesh Suryaprakash (Registration: <strong>25BIT0235</strong>)
+            </div>
+            <div>
               <strong>Project:</strong> Visual Simulator for File Allocation Techniques in Operating Systems
-              <br />
-              <strong>Student:</strong> Jaijitesh Suryaprakash
-              <br />
-              <strong>Registration Number:</strong> 25BIT0235
             </div>
           </div>
 
-          {/* Core Allocation Methods Comparison */}
-          <div>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
-              The Three Classical File Allocation Techniques
-            </h4>
+          {/* Theoretical Foundations */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Allocation Strategies
+            </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
-              <div className="stat-box" style={{ background: '#ffffff' }}>
-                <strong style={{ color: '#2563eb', display: 'block', marginBottom: '4px' }}>
-                  1. Contiguous Allocation
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+              <div style={{ padding: '12px', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                <strong style={{ fontSize: '13px', color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
+                  Contiguous Allocation
                 </strong>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                  Files occupy consecutive physical disk blocks. Directory entry stores only the start block and file length.
-                  <br /><br />
-                  <strong>Pros:</strong> Fast sequential and direct random access (O(1)). Minimal directory metadata.
-                  <br />
-                  <strong>Cons:</strong> Severe external fragmentation; dynamic file expansion is difficult if adjacent sectors are occupied.
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Files are stored in consecutive blocks on disk. Provides fast O(1) random access and high sequential throughput, but suffers from severe external fragmentation as files are created and deleted.
                 </p>
               </div>
 
-              <div className="stat-box" style={{ background: '#ffffff' }}>
-                <strong style={{ color: '#059669', display: 'block', marginBottom: '4px' }}>
-                  2. Linked Allocation
+              <div style={{ padding: '12px', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                <strong style={{ fontSize: '13px', color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
+                  Linked Allocation
                 </strong>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                  Files occupy scattered blocks connected via forward link pointers embedded in sector headers.
-                  <br /><br />
-                  <strong>Pros:</strong> Completely eliminates external fragmentation; dynamic growth is effortless across any free blocks.
-                  <br />
-                  <strong>Cons:</strong> Sequential traversal only (random access requires O(N) seeks); pointer overhead; single broken pointer corrupts remainder of file.
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Each block contains a pointer to the next block in the chain. Solves external fragmentation by scattering blocks anywhere, but limits access to sequential reading and incurs pointer overhead.
                 </p>
               </div>
 
-              <div className="stat-box" style={{ background: '#ffffff' }}>
-                <strong style={{ color: '#d97706', display: 'block', marginBottom: '4px' }}>
-                  3. Indexed Allocation
+              <div style={{ padding: '12px', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                <strong style={{ fontSize: '13px', color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>
+                  Indexed Allocation
                 </strong>
-                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                  Each file allocates a dedicated Index Block that houses a pointer array pointing directly to all data blocks.
-                  <br /><br />
-                  <strong>Pros:</strong> Combines direct O(1) random access with zero external fragmentation.
-                  <br />
-                  <strong>Cons:</strong> High space overhead for small files (1 whole block dedicated to index); single-level index capacity is limited.
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Brings all block pointers together into a single Index Block. Combines direct access with zero external fragmentation, at the expense of an entire index block of metadata overhead.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Simulator Assumptions */}
-          <div>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              Simulator Model Assumptions & Specifications
-            </h4>
-            <ul style={{ fontSize: '12px', color: 'var(--text-secondary)', paddingLeft: '20px', lineHeight: 1.6 }}>
-              <li><strong>Block Size:</strong> Fixed at 512 Bytes per physical sector by default (configurable).</li>
-              <li><strong>Internal Fragmentation:</strong> Calculated in the final allocated data block as <code>(requiredBlocks * blockSize) - fileSize</code>.</li>
-              <li><strong>Metadata Representation:</strong> Indexed allocation allocates 1 dedicated Index Block per file. Linked allocation reserves 4 bytes in each block header for its forward pointer.</li>
-              <li><strong>Transactional Safety:</strong> If an allocation fails (e.g. disk full, external fragmentation, or index limit exceeded), all operations are rolled back atomically to avoid orphaned sectors.</li>
+          {/* Model Assumptions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Simulator Assumptions
+            </h3>
+            <ul style={{ fontSize: '12.5px', color: 'var(--text-secondary)', paddingLeft: '20px', lineHeight: 1.6 }}>
+              <li><strong>Block Size:</strong> 512 bytes per physical sector.</li>
+              <li><strong>Internal Fragmentation:</strong> Calculated in the final allocated block as slack bytes.</li>
+              <li><strong>Metadata Overhead:</strong> Indexed allocation allocates 1 dedicated Index Block per file. Linked allocation reserves 4 bytes in each block header for its pointer.</li>
+              <li><strong>Transactional Rollback:</strong> Operations are atomic; failed allocations leave zero leaked sectors.</li>
             </ul>
-          </div>
-
-          {/* OS Glossary */}
-          <div>
-            <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              Glossary of Operating System Storage Concepts
-            </h4>
-            <dl style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              <dt><strong>Disk Block:</strong></dt>
-              <dd style={{ marginBottom: '6px', paddingLeft: '8px' }}>
-                The smallest addressable physical unit of disk storage managed by the file system.
-              </dd>
-
-              <dt><strong>Internal Fragmentation:</strong></dt>
-              <dd style={{ marginBottom: '6px', paddingLeft: '8px' }}>
-                Wasted space inside an allocated block because the file does not completely fill the final sector.
-              </dd>
-
-              <dt><strong>External Fragmentation:</strong></dt>
-              <dd style={{ marginBottom: '6px', paddingLeft: '8px' }}>
-                Wasted space occurring when total free memory/disk space is sufficient, but fractured into small isolated gaps so that a contiguous file cannot fit.
-              </dd>
-
-              <dt><strong>Index Block:</strong></dt>
-              <dd style={{ marginBottom: '6px', paddingLeft: '8px' }}>
-                A specialized disk sector that stores direct pointers to all the physical data sectors of a file.
-              </dd>
-            </dl>
           </div>
         </div>
 
         <div className="modal-footer">
-          <button className="btn-ui" onClick={onClose}>
+          <button className="btn-ui subtle" onClick={onClose}>
             Close
           </button>
         </div>
