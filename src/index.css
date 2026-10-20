@@ -2495,3 +2495,45 @@ code, pre, .font-mono {
   border-right: 1px solid rgba(56, 189, 248, 0.4);
   border-top: 1px solid rgba(56, 189, 248, 0.4);
 }
+
+/* --------------------------------------------------------------------------
+   Windows 11 Start Menu & Subsystem Enhancements
+   -------------------------------------------------------------------------- */
+@keyframes winStartSlideUp {
+  from {
+    transform: translate(-50%, 40px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+.win-start-app-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.win-start-rec-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.live-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseDot 1.8s infinite;
+}
+
+.engine-sector-hex-card {
+  transition: all 150ms ease;
+}
+
+.engine-sector-hex-card:hover {
+  border-color: rgba(56, 189, 248, 0.5) !important;
+}
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { FileRecord } from '../types/simulator';
 import { IconX } from './Icons';
 
@@ -15,13 +15,13 @@ export const RenameFileDialog: React.FC<RenameFileDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [name, setName] = useState('');
+  const [prevFile, setPrevFile] = useState(file);
+  const [name, setName] = useState(file ? file.name : '');
 
-  useEffect(() => {
-    if (file && isOpen) {
-      setName(file.name);
-    }
-  }, [file, isOpen]);
+  if (file !== prevFile) {
+    setPrevFile(file);
+    setName(file ? file.name : '');
+  }
 
   if (!isOpen || !file) return null;
 

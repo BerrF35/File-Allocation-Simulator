@@ -30,6 +30,10 @@ interface WindowsDesktopProps {
   onHoverChat: (data: HoverChatData | null) => void;
   onOpenScenarios?: () => void;
   onOpenComparison?: () => void;
+  onOpenStartMenu?: () => void;
+  onOpenDefrag?: () => void;
+  onOpenTerminal?: () => void;
+  onOpenPlatter?: () => void;
 }
 
 export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
@@ -46,6 +50,10 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
   onHoverChat,
   onOpenScenarios,
   onOpenComparison,
+  onOpenStartMenu,
+  onOpenDefrag,
+  onOpenTerminal,
+  onOpenPlatter,
 }) => {
   const [selectedSystemIcon, setSelectedSystemIcon] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState({ time: '', date: '' });
@@ -227,6 +235,93 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
           <span className="win-icon-label">Microsoft Edge</span>
         </div>
 
+        {/* System Icon: OS Kernel Terminal */}
+        <div
+          className={`win-desktop-icon ${selectedSystemIcon === 'terminal' ? 'selected' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedSystemIcon('terminal');
+            onSelectFile(null);
+          }}
+          onDoubleClick={() => onOpenTerminal && onOpenTerminal()}
+          onMouseEnter={(e) =>
+            onHoverChat({
+              title: 'OS Kernel PowerShell Terminal',
+              role: 'System Shell Interface',
+              explanation: 'Interactive command-line shell with real filesystem operations: `dir`, `cat`, `stat`, `touch`, `rm`, `chs`, `defrag`, and `bench`.',
+              details: 'Double-click to open terminal prompt.',
+              x: e.clientX,
+              y: e.clientY,
+            })
+          }
+          onMouseLeave={() => onHoverChat(null)}
+        >
+          <div className="win-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: '#1e293b', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
+              💻
+            </div>
+          </div>
+          <span className="win-icon-label">Terminal</span>
+        </div>
+
+        {/* System Icon: Mechanical Platter & Head Arm */}
+        <div
+          className={`win-desktop-icon ${selectedSystemIcon === 'platter' ? 'selected' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedSystemIcon('platter');
+            onSelectFile(null);
+          }}
+          onDoubleClick={() => onOpenPlatter && onOpenPlatter()}
+          onMouseEnter={(e) =>
+            onHoverChat({
+              title: 'Hard Disk Platter & Actuator Arm',
+              role: 'Mass-Storage Hardware Simulation',
+              explanation: 'Simulates rotating magnetic disc cylinders and pivoting read/write head arm to demonstrate seek latency and head thrashing in real time.',
+              details: 'Double-click to open physical drive visualizer.',
+              x: e.clientX,
+              y: e.clientY,
+            })
+          }
+          onMouseLeave={() => onHoverChat(null)}
+        >
+          <div className="win-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: '#0284c7', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
+              💽
+            </div>
+          </div>
+          <span className="win-icon-label">HDD Platter</span>
+        </div>
+
+        {/* System Icon: Drive Optimizer / Defrag */}
+        <div
+          className={`win-desktop-icon ${selectedSystemIcon === 'defrag' ? 'selected' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedSystemIcon('defrag');
+            onSelectFile(null);
+          }}
+          onDoubleClick={() => onOpenDefrag && onOpenDefrag()}
+          onMouseEnter={(e) =>
+            onHoverChat({
+              title: 'Drive Optimizer & Defragmenter (dfrgui.exe)',
+              role: 'Compaction Engine',
+              explanation: 'Eliminates external fragmentation by shifting allocated files into a single contiguous pool and compacting free holes.',
+              details: 'Double-click to open drive optimizer.',
+              x: e.clientX,
+              y: e.clientY,
+            })
+          }
+          onMouseLeave={() => onHoverChat(null)}
+        >
+          <div className="win-icon-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 42, height: 42, borderRadius: 8, background: '#059669', border: '1px solid rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
+              ⚡
+            </div>
+          </div>
+          <span className="win-icon-label">Defragmenter</span>
+        </div>
+
         {/* Dynamically Created User Files on Desktop */}
         {files.map((file) => {
           const isSelected = selectedFileId === file.id;
@@ -296,28 +391,65 @@ export const WindowsDesktop: React.FC<WindowsDesktopProps> = ({
           {/* Start Button */}
           <button
             className="win-taskbar-btn"
-            title="Start"
+            title="Start Menu"
             onClick={(e) => {
               e.stopPropagation();
-              onContextMenu(e);
+              if (onOpenStartMenu) onOpenStartMenu();
+              else onContextMenu(e);
             }}
           >
             <IconWindows11 size={20} />
           </button>
 
           {/* Search Box / Pill */}
-          <div className="win-taskbar-search" onClick={onContextMenu}>
+          <div
+            className="win-taskbar-search"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onOpenStartMenu) onOpenStartMenu();
+              else onContextMenu(e);
+            }}
+          >
             <IconSearch size={14} style={{ color: '#94a3b8' }} />
             <span style={{ color: '#94a3b8', fontSize: '12px' }}>Search</span>
           </div>
 
-          {/* Pinned / Running Apps */}
-          <button className="win-taskbar-btn" title="File Explorer">
-            <IconWindowsFolder size={20} />
-          </button>
+          {/* Terminal Taskbar Icon */}
+          {onOpenTerminal && (
+            <button
+              className="win-taskbar-btn"
+              title="OS Kernel Terminal (PowerShell)"
+              onClick={onOpenTerminal}
+            >
+              <span style={{ fontSize: '16px' }}>💻</span>
+            </button>
+          )}
 
-          <button className="win-taskbar-btn" title="Microsoft Edge">
-            <IconEdge size={20} />
+          {/* Platter & Seek Taskbar Icon */}
+          {onOpenPlatter && (
+            <button
+              className="win-taskbar-btn"
+              title="Mechanical Platter & Seek Arm"
+              onClick={onOpenPlatter}
+            >
+              <span style={{ fontSize: '16px' }}>💽</span>
+            </button>
+          )}
+
+          {/* Defragmenter Taskbar Icon */}
+          {onOpenDefrag && (
+            <button
+              className="win-taskbar-btn"
+              title="Drive Optimizer (Defrag)"
+              onClick={onOpenDefrag}
+            >
+              <span style={{ fontSize: '16px' }}>⚡</span>
+            </button>
+          )}
+
+          {/* File Explorer */}
+          <button className="win-taskbar-btn" title="File Explorer" onClick={onToggleSplitView}>
+            <IconWindowsFolder size={20} />
           </button>
 
           {/* Storage Simulator App (Active with Indicator Underline) */}

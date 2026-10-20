@@ -181,7 +181,7 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
                         ? '#ffffff'
                         : isIdx
                         ? '#fffbeb'
-                        : `${b.fileColor}20` || '#e0e7ff',
+                        : b.fileColor ? `${b.fileColor}20` : '#e0e7ff',
                       border: isFree
                         ? '1px solid #e7e7e4'
                         : isIdx

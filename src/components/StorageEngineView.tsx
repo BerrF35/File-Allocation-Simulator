@@ -24,6 +24,9 @@ interface StorageEngineViewProps {
   onOpenComparison: () => void;
   onOpenScenarios: () => void;
   onResetDisk: () => void;
+  onOpenPlatter?: () => void;
+  onOpenDefrag?: () => void;
+  onOpenTerminal?: () => void;
 }
 
 export const StorageEngineView: React.FC<StorageEngineViewProps> = ({
@@ -41,8 +44,12 @@ export const StorageEngineView: React.FC<StorageEngineViewProps> = ({
   onOpenComparison,
   onOpenScenarios,
   onResetDisk,
+  onOpenPlatter,
+  onOpenDefrag,
+  onOpenTerminal,
 }) => {
   const activeFile = files.find((f) => f.id === selectedFileId) || files[files.length - 1] || null;
+  const selectedBlock = selectedBlockId !== null ? blocks.find((b) => b.id === selectedBlockId) || null : null;
 
   // Active chat topic for the live dock chat window
   const [activeChatTopic, setActiveChatTopic] = useState<HoverChatData>({
@@ -114,6 +121,21 @@ export const StorageEngineView: React.FC<StorageEngineViewProps> = ({
 
         {/* Global Lab Tools */}
         <div className="engine-actions">
+          {onOpenPlatter && (
+            <button className="btn-engine-tool" onClick={onOpenPlatter} title="Physical Hard Disk Platter & Seek Arm">
+              💽 Platter
+            </button>
+          )}
+          {onOpenDefrag && (
+            <button className="btn-engine-tool" onClick={onOpenDefrag} title="Drive Optimizer & Defragmenter">
+              ⚡ Defrag
+            </button>
+          )}
+          {onOpenTerminal && (
+            <button className="btn-engine-tool" onClick={onOpenTerminal} title="Kernel PowerShell Terminal">
+              💻 Terminal
+            </button>
+          )}
           <button className="btn-engine-tool" onClick={onOpenScenarios} title="Load Scenarios">
             📚 Scenarios
           </button>
@@ -534,6 +556,145 @@ export const StorageEngineView: React.FC<StorageEngineViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Interactive Sector Byte Dump & CHS Coordinates Card (Active when sector selected) */}
+      {selectedBlock && (
+        <div
+          className="engine-sector-hex-card"
+          style={{
+            margin: '0 20px 16px 20px',
+            background: '#040711',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: '8px',
+            padding: '14px 16px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>🔍</span>
+              <div>
+                <strong style={{ fontSize: '13px', color: '#f8fafc' }}>
+                  Physical Sector LBA #{selectedBlock.id} (0x{selectedBlock.id.toString(16).padStart(4, '0').toUpperCase()})
+                </strong>
+                <span className="text-xs text-muted" style={{ display: 'block' }}>
+                  CHS: Cylinder {Math.floor(selectedBlock.id / 16)}, Head 0, Sector {selectedBlock.id % 16} · Track {Math.floor(selectedBlock.id / 16)}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {onOpenPlatter && (
+                <button
+                  type="button"
+                  className="btn-ui subtle"
+                  style={{ fontSize: '11px', padding: '3px 8px' }}
+                  onClick={onOpenPlatter}
+                  title="Watch Mechanical Head seek to this sector"
+                >
+                  💽 Seek Head Here
+                </button>
+              )}
+              <button
+                type="button"
+                className="btn-ui subtle"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
+                onClick={() => onSelectBlock(null)}
+                title="Close Inspector"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Allocation & Slack Space Info */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '12px', fontSize: '11.5px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '4px' }}>
+              <span style={{ color: '#64748b', display: 'block' }}>Status:</span>
+              <strong style={{ color: selectedBlock.state !== 'free' ? '#38bdf8' : '#34d399' }}>
+                {selectedBlock.state !== 'free'
+                  ? selectedBlock.fileTag?.includes('IDX')
+                    ? 'INDEX BLOCK (Pointer Table)'
+                    : `ALLOCATED (${selectedBlock.fileName || 'File'})`
+                  : 'FREE SECTOR (Unallocated)'}
+              </strong>
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '4px' }}>
+              <span style={{ color: '#64748b', display: 'block' }}>Payload &amp; Slack:</span>
+              <span style={{ color: '#cbd5e1' }}>
+                {selectedBlock.bytesUsed} / {config.blockSize} B used (
+                  <span style={{ color: '#f59e0b' }}>
+                    {config.blockSize - selectedBlock.bytesUsed} B slack space
+                  </span>
+                )
+              </span>
+            </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '4px' }}>
+              <span style={{ color: '#64748b', display: 'block' }}>Pointer Chain:</span>
+              <span style={{ color: '#cbd5e1' }}>
+                {selectedBlock.nextBlockId !== null && selectedBlock.nextBlockId !== undefined
+                  ? `Next LBA ➔ #${selectedBlock.nextBlockId}`
+                  : selectedBlock.referencedByIndexBlock !== undefined
+                  ? `Index Parent ➔ #${selectedBlock.referencedByIndexBlock}`
+                  : selectedBlock.indexEntries
+                  ? `Indexes: [${selectedBlock.indexEntries.join(', ')}]`
+                  : 'Sequential / EOF'}
+              </span>
+            </div>
+          </div>
+
+          {/* Raw Hex & ASCII Dump Table */}
+          <div
+            style={{
+              background: '#020409',
+              borderRadius: '4px',
+              padding: '8px 12px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              lineHeight: 1.5,
+              color: '#94a3b8',
+              overflowX: 'auto',
+            }}
+          >
+            <div style={{ color: '#475569', marginBottom: '2px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '2px' }}>
+              Offset &nbsp; 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F &nbsp; Decoded ASCII
+            </div>
+            <div>
+              <span style={{ color: '#38bdf8' }}>0000:</span> 53 69 6D 46 53 5F 53 45 43 54 4F 52 5F 30 78{' '}
+              {selectedBlock.id.toString(16).padStart(2, '0').toUpperCase()} &nbsp;
+              <span style={{ color: '#f1f5f9' }}>SimFS_SECTOR_0x{selectedBlock.id.toString(16).padStart(2, '0')}</span>
+            </div>
+            <div>
+              <span style={{ color: '#38bdf8' }}>0010:</span>{' '}
+              {selectedBlock.state !== 'free'
+                ? '44 61 74 61 50 61 79 6C 6F 61 64 5F 42 6C 6F 63'
+                : '00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'}{' '}
+              &nbsp;
+              <span style={{ color: '#f1f5f9' }}>
+                {selectedBlock.state !== 'free' ? 'DataPayload_Bloc' : '................'}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: '#38bdf8' }}>0020:</span>{' '}
+              {selectedBlock.nextBlockId !== null && selectedBlock.nextBlockId !== undefined
+                ? `4E 58 54 3A 00 00 00 ${selectedBlock.nextBlockId.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00 00`
+                : '6B 5F 43 6F 6E 74 65 6E 74 53 74 72 65 61 6D 00'}{' '}
+              &nbsp;
+              <span style={{ color: '#f1f5f9' }}>
+                {selectedBlock.nextBlockId !== null && selectedBlock.nextBlockId !== undefined
+                  ? `NXT:...${selectedBlock.nextBlockId}........`
+                  : 'k_ContentStream.'}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: '#38bdf8' }}>01F0:</span> 00 00 00 00 00 00 00 00 00 00 00 00 00 00 55 AA &nbsp;
+              <span style={{ color: '#f59e0b' }}>..............U.</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Docked Live Kernel Chat Window Box */}
       <div className="engine-docked-chat-card" role="region" aria-label="Kernel Storage Chat Assistant">

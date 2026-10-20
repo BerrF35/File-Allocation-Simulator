@@ -11,18 +11,14 @@ export const TutorCornerPopup: React.FC<TutorCornerPopupProps> = ({ onOpenNewFil
   const [minimized, setMinimized] = useState(false);
 
   useEffect(() => {
-    if (isVisible) {
-      // 1.2s delay for a natural entrance after desktop renders
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 1200);
-      return () => clearTimeout(timer);
-    } else {
-      setIsOpen(false);
-    }
+    if (!isVisible) return;
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 1200);
+    return () => clearTimeout(timer);
   }, [isVisible]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !isVisible) return null;
 
   if (minimized) {
     return (

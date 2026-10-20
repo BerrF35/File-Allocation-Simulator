@@ -28,31 +28,50 @@ import { TutorCornerPopup } from './components/TutorCornerPopup';
 import { WindowsNewFileDialog } from './components/WindowsNewFileDialog';
 import { HoverChatWindow, type HoverChatData } from './components/HoverChatWindow';
 
-// Modals
+// Modals & New Subsystems
 import { ResizeFileDialog } from './components/ResizeFileDialog';
 import { RenameFileDialog } from './components/RenameFileDialog';
 import { RecycleBinModal } from './components/RecycleBinModal';
 import { ScenariosModal } from './components/ScenariosModal';
 import { ComparisonViewModal } from './components/ComparisonViewModal';
 import { AboutModal } from './components/AboutModal';
+import { WindowsStartMenu } from './components/WindowsStartMenu';
+import { DiskPlatterArmVisualizer } from './components/DiskPlatterArmVisualizer';
+import { DiskDefragmenterModal } from './components/DiskDefragmenterModal';
+import { WindowsTerminal } from './components/WindowsTerminal';
 
 const STORAGE_KEY = 'os_alloc_simulator_state_v2';
 
+const loadInitialStorage = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.files && parsed.blocks && parsed.method) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return null;
+};
+
 export const App: React.FC = () => {
+  const [initialData] = useState(loadInitialStorage);
+
   // Core Simulation State
-  const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
-  const [method, setMethod] = useState<AllocationMethod>('contiguous');
-  const [blocks, setBlocks] = useState<DiskBlock[]>(() => createInitialDisk(DEFAULT_CONFIG.totalBlocks));
-  const [files, setFiles] = useState<FileRecord[]>([]);
-  const [recycleBin, setRecycleBin] = useState<FileRecord[]>([]);
+  const [config, setConfig] = useState<SimConfig>(() => initialData?.config || DEFAULT_CONFIG);
+  const [method, setMethod] = useState<AllocationMethod>(() => initialData?.method || 'contiguous');
+  const [blocks, setBlocks] = useState<DiskBlock[]>(() => initialData?.blocks || createInitialDisk(DEFAULT_CONFIG.totalBlocks));
+  const [files, setFiles] = useState<FileRecord[]>(() => initialData?.files || []);
+  const [recycleBin, setRecycleBin] = useState<FileRecord[]>(() => initialData?.recycleBin || []);
 
   // Selection & UI Focus
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
 
   // Cinematic Split View & First Save State
-  const [isSplitView, setIsSplitView] = useState<boolean>(false);
-  const [firstSaveHappened, setFirstSaveHappened] = useState<boolean>(false);
+  const [isSplitView, setIsSplitView] = useState<boolean>(() => initialData?.isSplitView || false);
+  const [firstSaveHappened, setFirstSaveHappened] = useState<boolean>(() => initialData?.firstSaveHappened || false);
 
   // Pipeline Execution State
   const [pipelineSession, setPipelineSession] = useState<PipelineSession | null>(null);
@@ -65,7 +84,7 @@ export const App: React.FC = () => {
   const [fileContextMenu, setFileContextMenu] = useState<{ x: number; y: number; file: FileRecord } | null>(null);
   const [binContextMenu, setBinContextMenu] = useState<{ x: number; y: number } | null>(null);
 
-  // Modals
+  // Modals & New Subsystems
   const [isNewFileOpen, setIsNewFileOpen] = useState(false);
   const [resizeTargetFile, setResizeTargetFile] = useState<FileRecord | null>(null);
   const [renameTargetFile, setRenameTargetFile] = useState<FileRecord | null>(null);
@@ -73,27 +92,10 @@ export const App: React.FC = () => {
   const [isScenariosOpen, setIsScenariosOpen] = useState(false);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.files && parsed.blocks && parsed.method) {
-          setConfig(parsed.config || DEFAULT_CONFIG);
-          setMethod(parsed.method);
-          setBlocks(parsed.blocks);
-          setFiles(parsed.files);
-          setRecycleBin(parsed.recycleBin || []);
-          setFirstSaveHappened(parsed.firstSaveHappened || false);
-          setIsSplitView(parsed.isSplitView || false);
-        }
-      }
-    } catch {
-      // Fallback
-    }
-  }, []);
+  const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
+  const [isPlatterOpen, setIsPlatterOpen] = useState(false);
+  const [isDefragOpen, setIsDefragOpen] = useState(false);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
 
   // Save to localStorage whenever state changes
   useEffect(() => {
@@ -479,11 +481,12 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // Global click dismiss for context menus
+  // Global click dismiss for context menus and start menu
   const handleGlobalClick = () => {
     if (desktopContextMenu) setDesktopContextMenu(null);
     if (fileContextMenu) setFileContextMenu(null);
     if (binContextMenu) setBinContextMenu(null);
+    if (isStartMenuOpen) setIsStartMenuOpen(false);
   };
 
   return (
@@ -503,18 +506,21 @@ export const App: React.FC = () => {
               e.preventDefault();
               setFileContextMenu(null);
               setBinContextMenu(null);
+              setIsStartMenuOpen(false);
               setDesktopContextMenu({ x: e.clientX, y: e.clientY });
             }}
             onFileContextMenu={(e, file) => {
               e.preventDefault();
               setDesktopContextMenu(null);
               setBinContextMenu(null);
+              setIsStartMenuOpen(false);
               setFileContextMenu({ x: e.clientX, y: e.clientY, file });
             }}
             onBinContextMenu={(e) => {
               e.preventDefault();
               setDesktopContextMenu(null);
               setFileContextMenu(null);
+              setIsStartMenuOpen(false);
               setBinContextMenu({ x: e.clientX, y: e.clientY });
             }}
             onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
@@ -525,6 +531,10 @@ export const App: React.FC = () => {
             onHoverChat={setHoverChatData}
             onOpenScenarios={() => setIsScenariosOpen(true)}
             onOpenComparison={() => setIsComparisonOpen(true)}
+            onOpenStartMenu={() => setIsStartMenuOpen((prev) => !prev)}
+            onOpenDefrag={() => setIsDefragOpen(true)}
+            onOpenTerminal={() => setIsTerminalOpen(true)}
+            onOpenPlatter={() => setIsPlatterOpen(true)}
           />
         </section>
 
@@ -549,6 +559,9 @@ export const App: React.FC = () => {
               onOpenComparison={() => setIsComparisonOpen(true)}
               onOpenScenarios={() => setIsScenariosOpen(true)}
               onResetDisk={handleResetDisk}
+              onOpenPlatter={() => setIsPlatterOpen(true)}
+              onOpenDefrag={() => setIsDefragOpen(true)}
+              onOpenTerminal={() => setIsTerminalOpen(true)}
             />
           </section>
         )}
@@ -722,6 +735,91 @@ export const App: React.FC = () => {
       />
 
       <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      {/* Windows 11 Start Menu Panel */}
+      <WindowsStartMenu
+        isOpen={isStartMenuOpen}
+        onClose={() => setIsStartMenuOpen(false)}
+        onOpenNewFile={() => setIsNewFileOpen(true)}
+        onOpenDefrag={() => setIsDefragOpen(true)}
+        onOpenTerminal={() => setIsTerminalOpen(true)}
+        onOpenPlatter={() => setIsPlatterOpen(true)}
+        onOpenBenchmark={() => setIsComparisonOpen(true)}
+        onOpenScenarios={() => setIsScenariosOpen(true)}
+        onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
+        onToggleSplitView={() => setIsSplitView(!isSplitView)}
+        onResetDisk={handleResetDisk}
+      />
+
+      {/* Mechanical Hard Disk Platter & Actuator Seek Arm Visualizer */}
+      <DiskPlatterArmVisualizer
+        isOpen={isPlatterOpen}
+        onClose={() => setIsPlatterOpen(false)}
+        blocks={blocks}
+        files={files}
+        config={config}
+        selectedFileId={selectedFileId}
+        onSelectFile={setSelectedFileId}
+        onSelectBlock={setSelectedBlockId}
+      />
+
+      {/* Drive Optimizer & Live Disk Defragmenter (Compaction) */}
+      <DiskDefragmenterModal
+        isOpen={isDefragOpen}
+        onClose={() => setIsDefragOpen(false)}
+        blocks={blocks}
+        files={files}
+        config={config}
+        onApplyDefrag={(newBlocks, newFiles) => {
+          setBlocks(newBlocks);
+          setFiles(newFiles);
+          setPipelineSession({
+            operationType: 'save',
+            fileName: 'Drive C: (Compacted)',
+            method,
+            steps: [
+              {
+                id: 1,
+                phase: 'compaction',
+                title: 'Drive Defragmentation & Compaction Finished',
+                status: 'completed',
+                whatHappened: 'Relocated all active files into continuous sequential LBA sectors starting from block 0.',
+                whyItHappened: 'Compaction eliminates external fragmentation by shifting all allocated blocks together, leaving one single consolidated free block segment.',
+                whatChanged: 'External fragmentation reduced to 0%. All allocated files are now contiguous.',
+                tradeOff: 'High computational and disk I/O overhead during reorganization, but delivers optimal sequential read performance thereafter.',
+                highlightedBlockIds: newFiles.flatMap((f) => f.allocatedBlocks),
+              },
+            ],
+            currentStepIndex: 0,
+            isSuccess: true,
+            timestamp: Date.now(),
+          });
+        }}
+      />
+
+      {/* Interactive OS Kernel PowerShell Terminal */}
+      <WindowsTerminal
+        isOpen={isTerminalOpen}
+        onClose={() => setIsTerminalOpen(false)}
+        files={files}
+        blocks={blocks}
+        config={config}
+        onCreateFile={(params) => {
+          if (params.method && params.method !== method) {
+            setMethod(params.method);
+          }
+          handleCreateFile({
+            name: params.name,
+            type: 'TXT',
+            sizeBytes: params.sizeBytes,
+            content: params.content,
+          });
+        }}
+        onDeleteFile={handleDeleteFile}
+        onOpenDefrag={() => setIsDefragOpen(true)}
+        onOpenBenchmark={() => setIsComparisonOpen(true)}
+        onOpenPlatter={() => setIsPlatterOpen(true)}
+      />
     </div>
   );
 };

@@ -26,20 +26,16 @@ export const PipelineExplanationPanel: React.FC<PipelineExplanationPanelProps> =
   const steps = session?.steps || [];
   const currentStepIndex = session ? Math.min(session.currentStepIndex, steps.length - 1) : 0;
 
+  const effectiveIsPlaying = isPlaying && currentStepIndex < steps.length - 1;
+
   // Auto-play timer
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    if (isPlaying && session && currentStepIndex < steps.length - 1) {
-      timer = setTimeout(() => {
-        onStepChange(currentStepIndex + 1);
-      }, playbackSpeed);
-    } else if (currentStepIndex >= steps.length - 1) {
-      setIsPlaying(false);
-    }
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [isPlaying, currentStepIndex, steps.length, session, onStepChange, playbackSpeed]);
+    if (!effectiveIsPlaying || !session) return;
+    const timer = setTimeout(() => {
+      onStepChange(currentStepIndex + 1);
+    }, playbackSpeed);
+    return () => clearTimeout(timer);
+  }, [effectiveIsPlaying, currentStepIndex, session, onStepChange, playbackSpeed]);
 
   if (!session || steps.length === 0) {
     return (

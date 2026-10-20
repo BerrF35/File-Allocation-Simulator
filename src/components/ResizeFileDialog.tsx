@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { AllocationMethod, FileRecord, SimConfig } from '../types/simulator';
 import { IconX } from './Icons';
 
@@ -19,13 +19,13 @@ export const ResizeFileDialog: React.FC<ResizeFileDialogProps> = ({
   method,
   config,
 }) => {
-  const [newSizeInput, setNewSizeInput] = useState('');
+  const [prevFile, setPrevFile] = useState(file);
+  const [newSizeInput, setNewSizeInput] = useState(file ? String(file.sizeBytes) : '');
 
-  useEffect(() => {
-    if (file && isOpen) {
-      setNewSizeInput(String(file.sizeBytes));
-    }
-  }, [file, isOpen]);
+  if (file !== prevFile) {
+    setPrevFile(file);
+    setNewSizeInput(file ? String(file.sizeBytes) : '');
+  }
 
   if (!isOpen || !file) return null;
 
