@@ -2537,3 +2537,207 @@ code, pre, .font-mono {
   border-color: rgba(56, 189, 248, 0.5) !important;
 }
 
+/* --------------------------------------------------------------------------
+   Anatomy Skill: 3D Isometric Engineering Instrument System
+   -------------------------------------------------------------------------- */
+.iso {
+  --anatomy-page: #0b0b0b;
+  --anatomy-card: #0d131f;
+  --anatomy-text: #94a3b8;
+  --anatomy-strong: #f1f5f9;
+  --anatomy-muted: #64748b;
+  --anatomy-paper: #0b1120;
+  --anatomy-face: #1e293b;
+  --anatomy-top: #1e293b;
+  --anatomy-shade-0: #070c18;
+  --anatomy-shade-1: #0b1325;
+  --anatomy-shade-2: #101d36;
+  --anatomy-shade-3: #162646;
+  --anatomy-lit-top: #2563eb;
+  --anatomy-lit-shade: #1d4ed8;
+  --anatomy-hi: #e2e8f0;
+  --anatomy-mid: #64748b;
+  --anatomy-lo: #334155;
+  --anatomy-faint: #1e293b;
+  --anatomy-lit: #38bdf8;
+  --anatomy-halo: #0284c7;
+  --anatomy-halo-opacity: 0.25;
+  --anatomy-dot: #f8fafc;
+  --anatomy-red: #f87171;
+  --anatomy-green: #34d399;
+  --anatomy-blue: #38bdf8;
+  --anatomy-amber: #fbbf24;
+  --anatomy-weight: 0.65px;
+  --anatomy-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --anatomy-mono: var(--font-mono, ui-monospace, Menlo, Consolas, monospace);
+}
+
+.iso-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.iso-svg path,
+.iso-svg circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.iso-fill {
+  fill: var(--anatomy-paper);
+  stroke: none;
+}
+
+.iso-solid[data-lit] > .iso-fill {
+  fill: var(--anatomy-face);
+}
+
+.iso-shade,
+.iso-top {
+  stroke: none;
+}
+
+.iso-shade[data-shade="0"] { fill: var(--anatomy-shade-0); }
+.iso-shade[data-shade="1"] { fill: var(--anatomy-shade-1); }
+.iso-shade[data-shade="2"] { fill: var(--anatomy-shade-2); }
+.iso-shade[data-shade="3"] { fill: var(--anatomy-shade-3); }
+.iso-top { fill: var(--anatomy-top); }
+
+.iso-solid[data-lit] > .iso-top { fill: var(--anatomy-lit-top); }
+.iso-solid[data-lit] > .iso-shade { fill: var(--anatomy-lit-shade); }
+
+.iso-solid[data-seamless] > .iso-shade,
+.iso-solid[data-seamless] > .iso-top {
+  stroke-width: 0.4;
+  stroke-linejoin: round;
+}
+
+.iso-solid[data-lit] > .iso-edge {
+  stroke: var(--anatomy-lit);
+}
+
+.iso-halo {
+  fill: var(--anatomy-halo);
+  stroke: none;
+  filter: blur(12px);
+  opacity: var(--anatomy-halo-opacity);
+  transform: translateY(4px);
+}
+
+.iso-line {
+  fill: none;
+  stroke: var(--anatomy-lo);
+  stroke-width: var(--anatomy-weight);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.iso-line[data-tone="hi"] { stroke: var(--anatomy-hi); }
+.iso-line[data-tone="mid"] { stroke: var(--anatomy-mid); }
+.iso-line[data-tone="lo"] { stroke: var(--anatomy-lo); }
+.iso-line[data-tone="faint"] { stroke: var(--anatomy-faint); }
+.iso-line[data-tone="lit"] { stroke: var(--anatomy-lit); }
+.iso-line[data-tone="red"] { stroke: var(--anatomy-red); }
+.iso-line[data-tone="green"] { stroke: var(--anatomy-green); }
+.iso-line[data-tone="blue"] { stroke: var(--anatomy-blue); }
+.iso-line[data-tone="amber"] { stroke: var(--anatomy-amber); }
+
+.iso-line[data-dotted] {
+  stroke-dasharray: 0.01 3.5;
+  stroke-width: 1;
+}
+
+.iso-line[data-dashed] {
+  stroke-dasharray: 3 3;
+}
+
+.iso-line[data-flow] {
+  stroke-dasharray: 2 6;
+  animation: isoFlow 1600ms linear infinite;
+}
+
+@keyframes isoFlow {
+  to { stroke-dashoffset: -32; }
+}
+
+.iso-dots circle {
+  fill: var(--anatomy-dot);
+  stroke: none;
+  opacity: 0.35;
+}
+
+.iso-dots[data-tone="hi"] circle { opacity: 0.9; }
+.iso-dots[data-tone="mid"] circle { opacity: 0.5; }
+.iso-dots[data-tone="lo"] circle { opacity: 0.25; }
+.iso-dots[data-tone="faint"] circle { opacity: 0.12; }
+
+.iso-face-text {
+  fill: var(--anatomy-mid);
+  font-family: var(--anatomy-mono);
+  letter-spacing: 0.04em;
+}
+
+.iso-face-text[data-tone="hi"] { fill: var(--anatomy-hi); }
+.iso-face-text[data-tone="lo"] { fill: var(--anatomy-lo); }
+.iso-face-text[data-tone="faint"] { fill: var(--anatomy-faint); }
+
+.iso-figure {
+  margin: 0;
+  position: relative;
+}
+
+.iso-plate {
+  position: relative;
+  padding: 38px 20px 24px 20px;
+  background: var(--anatomy-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+}
+
+.iso-plate-corners {
+  position: absolute;
+  inset: 12px 16px;
+  pointer-events: none;
+}
+
+.iso-plate-corner {
+  position: absolute;
+  color: var(--anatomy-muted);
+  font-family: var(--anatomy-mono);
+  font-size: 10.5px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.iso-plate-corner[data-corner="fig"] {
+  top: 0;
+  left: 0;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.iso-plate-corner[data-corner="title"] {
+  top: 0;
+  right: 0;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.iso-plate-corner[data-corner="hint"] {
+  bottom: 0;
+  left: 0;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.iso-plate-corner[data-corner="readout"] {
+  right: 0;
+  bottom: 0;
+  color: #38bdf8;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
