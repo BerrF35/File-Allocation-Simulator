@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type {
   AllocationMethod,
   DiskBlock,
@@ -51,24 +51,40 @@ export const StorageEngineView: React.FC<StorageEngineViewProps> = ({
   const activeFile = files.find((f) => f.id === selectedFileId) || files[files.length - 1] || null;
   const selectedBlock = selectedBlockId !== null ? blocks.find((b) => b.id === selectedBlockId) || null : null;
 
-  // Active chat topic for the live dock chat window
-  const [activeChatTopic, setActiveChatTopic] = useState<HoverChatData>({
-    title: `${method.toUpperCase()} Allocation Subsystem Active`,
-    role: 'Kernel Storage Controller',
-    explanation:
-      'Hover your cursor over any pipe, VFS translator, or physical sector block to inspect how the operating system handles data movement and sector allocation in real time.',
-    details: `Active File: ${activeFile ? activeFile.name : 'None'} • Block Size: ${config.blockSize}B • Capacity: ${config.totalBlocks} Sectors`,
-    tradeOff:
-      method === 'contiguous'
-        ? 'Contiguous allocation maximizes sequential read speed (1 disk seek), but risks external fragmentation.'
-        : method === 'linked'
-        ? 'Linked list allocation eliminates external fragmentation completely, but random access requires sequential traversal.'
-        : 'Indexed allocation provides direct O(1) random seek without external fragmentation, using 1 index block.',
-  });
+  const defaultTopic: HoverChatData = React.useMemo(
+    () => ({
+      title: `${method.toUpperCase()} Allocation Subsystem Active`,
+      role: 'Kernel Storage Controller',
+      explanation:
+        method === 'contiguous'
+          ? 'Operating system allocated contiguous sector extents. Maximum sequential read speed (1 disk seek), but vulnerable to external fragmentation as files are deleted or resized.'
+          : method === 'linked'
+          ? 'Operating system chained physical sectors with forward pointers in block headers. Zero external fragmentation, but random access requires sequential pointer traversal.'
+          : 'Operating system allocated an Index Block (IDX) storing direct sector addresses. Delivers instant O(1) random access without external fragmentation, with 1-block index overhead.',
+      details: `Active File: ${activeFile ? activeFile.name : 'None'} • Block Size: ${config.blockSize}B • Capacity: ${config.totalBlocks} Sectors`,
+      tradeOff:
+        method === 'contiguous'
+          ? 'Pros: 1 disk seek, simple directory entry. Cons: External fragmentation, file size fixed upfront.'
+          : method === 'linked'
+          ? 'Pros: No external fragmentation, easy file growth. Cons: Slow random seek, pointer overhead.'
+          : 'Pros: Instant direct seek, no external fragmentation. Cons: Index block overhead for small files.',
+    }),
+    [method, activeFile, config.blockSize, config.totalBlocks]
+  );
+
+  const [hoverTopic, setHoverTopic] = React.useState<HoverChatData | null>(null);
+  const [prevMethod, setPrevMethod] = React.useState(method);
+
+  if (prevMethod !== method) {
+    setPrevMethod(method);
+    setHoverTopic(null);
+  }
+
+  const activeChatTopic = hoverTopic ?? defaultTopic;
 
   const triggerHover = (data: HoverChatData) => {
     onHoverChat(data);
-    setActiveChatTopic(data);
+    setHoverTopic(data);
   };
 
   return (

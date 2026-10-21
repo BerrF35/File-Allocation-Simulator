@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { FileRecord, SimConfig } from '../types/simulator';
+import type { AllocationMethod, FileRecord, SimConfig } from '../types/simulator';
 import { runComparativeSimulation } from '../core/simulatorEngine';
 import { IconX } from './Icons';
 
@@ -8,6 +8,7 @@ interface ComparisonViewModalProps {
   onClose: () => void;
   files: FileRecord[];
   config: SimConfig;
+  initialMethod?: AllocationMethod;
 }
 
 export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
@@ -15,8 +16,17 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
   onClose,
   files,
   config,
+  initialMethod = 'contiguous',
 }) => {
-  const [activeTab, setActiveTab] = useState<'contiguous' | 'linked' | 'indexed'>('contiguous');
+  const [selectedTab, setSelectedTab] = useState<'contiguous' | 'linked' | 'indexed' | null>(null);
+  const [prevInitialMethod, setPrevInitialMethod] = useState(initialMethod);
+
+  if (prevInitialMethod !== initialMethod) {
+    setPrevInitialMethod(initialMethod);
+    setSelectedTab(null);
+  }
+
+  const activeTab = selectedTab ?? initialMethod;
 
   if (!isOpen) return null;
 
@@ -133,19 +143,19 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
               <div className="method-segmented-control">
                 <button
                   className={`method-btn ${activeTab === 'contiguous' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('contiguous')}
+                  onClick={() => setSelectedTab('contiguous')}
                 >
                   Contiguous
                 </button>
                 <button
                   className={`method-btn ${activeTab === 'linked' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('linked')}
+                  onClick={() => setSelectedTab('linked')}
                 >
                   Linked
                 </button>
                 <button
                   className={`method-btn ${activeTab === 'indexed' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('indexed')}
+                  onClick={() => setSelectedTab('indexed')}
                 >
                   Indexed
                 </button>

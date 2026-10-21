@@ -747,3 +747,206 @@ export function runComparativeSimulation(files: FileRecord[], config: SimConfig)
 
   return results;
 }
+
+/**
+ * Dynamically migrates all active files to a new allocation method and returns the reconstructed disk and updated file records.
+ */
+export function migrateFilesToMethod(
+  files: FileRecord[],
+  newMethod: AllocationMethod,
+  oldMethod: AllocationMethod,
+  config: SimConfig
+): {
+  success: boolean;
+  disk: DiskBlock[];
+  files: FileRecord[];
+  steps: PipelineStep[];
+  error?: string;
+} {
+  const steps: PipelineStep[] = [];
+  const newDisk = createInitialDisk(config.totalBlocks);
+  const newFiles: FileRecord[] = [];
+
+  const tradeOffMap: Record<AllocationMethod, string> = {
+    contiguous:
+      'Contiguous allocation guarantees sequential sector runs for maximum read throughput, but is vulnerable to external fragmentation as files grow or are deleted.',
+    linked:
+      'Linked allocation allows data blocks to be scattered anywhere across the physical volume (zero external fragmentation), but random access requires sequential pointer traversal.',
+    indexed:
+      'Indexed allocation stores block pointers in a centralized index block, delivering O(1) random access without external fragmentation, at the cost of 1 index block metadata overhead per file.',
+  };
+
+  steps.push({
+    id: 1,
+    phase: 'Driver Switch',
+    title: `Kernel Storage Driver Switched: ${oldMethod.toUpperCase()} ➔ ${newMethod.toUpperCase()}`,
+    status: 'completed',
+    whatHappened: `Operating system unloaded alloc_${oldMethod}.sys and initialized alloc_${newMethod}.sys as the primary volume allocation controller.`,
+    whyItHappened: `User switched the secondary storage allocation method. All file data structures and physical disk block maps must be reorganized to conform to ${newMethod.toUpperCase()} architecture.`,
+    whatChanged: `Volume C: allocation policy changed from ${oldMethod} to ${newMethod}. Free space bitmap reset and re-scanned.`,
+    tradeOff: tradeOffMap[newMethod],
+    technicalDetails: `Driver transition: ${oldMethod} -> ${newMethod}. Volume: C: (SimFS). Block size: ${config.blockSize}B.`,
+    highlightedBlockIds: [],
+  });
+
+  if (files.length === 0) {
+    return {
+      success: true,
+      disk: newDisk,
+      files: [],
+      steps,
+    };
+  }
+
+  let allSuccess = true;
+  let firstError: string | undefined;
+
+  for (const f of files) {
+    let result;
+    if (newMethod === 'contiguous') {
+      result = allocateContiguous(newDisk, f.name, f.sizeBytes, f.requiredBlocks, config);
+    } else if (newMethod === 'linked') {
+      result = allocateLinked(newDisk, f.name, f.sizeBytes, f.requiredBlocks, config);
+    } else {
+      result = allocateIndexed(newDisk, f.name, f.sizeBytes, f.requiredBlocks, config);
+    }
+
+    if (result.success) {
+      if (newMethod === 'contiguous') {
+        for (let i = 0; i < result.allocatedDataBlocks.length; i++) {
+          const blkId = result.allocatedDataBlocks[i];
+          newDisk[blkId] = {
+            ...newDisk[blkId],
+            state: 'data',
+            fileId: f.id,
+            fileName: f.name,
+            fileColor: f.color,
+            fileTag: f.tag,
+            blockOffset: i,
+            totalBlocksInFile: result.allocatedDataBlocks.length,
+            bytesUsed: config.blockSize,
+            nextBlockId: null,
+            indexEntries: undefined,
+            referencedByIndexBlock: undefined,
+          };
+        }
+        newFiles.push({
+          ...f,
+          allocatedBlocks: result.allocatedDataBlocks,
+          startBlock: result.startBlock,
+          length: result.allocatedDataBlocks.length,
+          totalBlocksAllocated: result.allocatedDataBlocks.length,
+          indexBlockId: undefined,
+          endBlock: undefined,
+          updatedAt: Date.now(),
+        });
+      } else if (newMethod === 'linked') {
+        for (let i = 0; i < result.allocatedDataBlocks.length; i++) {
+          const blkId = result.allocatedDataBlocks[i];
+          const nextId = result.pointerMap ? result.pointerMap[blkId] ?? null : null;
+          newDisk[blkId] = {
+            ...newDisk[blkId],
+            state: 'data',
+            fileId: f.id,
+            fileName: f.name,
+            fileColor: f.color,
+            fileTag: f.tag,
+            blockOffset: i,
+            totalBlocksInFile: result.allocatedDataBlocks.length,
+            bytesUsed: config.blockSize,
+            nextBlockId: nextId,
+            indexEntries: undefined,
+            referencedByIndexBlock: undefined,
+          };
+        }
+        newFiles.push({
+          ...f,
+          allocatedBlocks: result.allocatedDataBlocks,
+          startBlock: result.startBlock,
+          endBlock: result.endBlock,
+          length: result.allocatedDataBlocks.length,
+          totalBlocksAllocated: result.allocatedDataBlocks.length,
+          indexBlockId: undefined,
+          updatedAt: Date.now(),
+        });
+      } else {
+        // Indexed
+        const indexId = result.indexBlockId!;
+        newDisk[indexId] = {
+          ...newDisk[indexId],
+          state: 'index',
+          fileId: f.id,
+          fileName: f.name,
+          fileColor: f.color,
+          fileTag: `${f.name.slice(0, 4)}:IDX`,
+          blockOffset: null,
+          totalBlocksInFile: result.allocatedDataBlocks.length,
+          bytesUsed: config.blockSize,
+          indexEntries: result.allocatedDataBlocks,
+          nextBlockId: null,
+          referencedByIndexBlock: undefined,
+        };
+        for (let i = 0; i < result.allocatedDataBlocks.length; i++) {
+          const blkId = result.allocatedDataBlocks[i];
+          newDisk[blkId] = {
+            ...newDisk[blkId],
+            state: 'data',
+            fileId: f.id,
+            fileName: f.name,
+            fileColor: f.color,
+            fileTag: f.tag,
+            blockOffset: i,
+            totalBlocksInFile: result.allocatedDataBlocks.length,
+            bytesUsed: config.blockSize,
+            referencedByIndexBlock: indexId,
+            nextBlockId: null,
+            indexEntries: undefined,
+          };
+        }
+        newFiles.push({
+          ...f,
+          allocatedBlocks: result.allocatedDataBlocks,
+          indexBlockId: indexId,
+          startBlock: indexId,
+          length: result.allocatedDataBlocks.length,
+          totalBlocksAllocated: result.allocatedDataBlocks.length + 1,
+          endBlock: undefined,
+          updatedAt: Date.now(),
+        });
+      }
+    } else {
+      allSuccess = false;
+      if (!firstError) firstError = result.errorMessage;
+    }
+  }
+
+  const allAllocatedBlockIds = newFiles.flatMap((f) =>
+    f.indexBlockId !== undefined ? [f.indexBlockId, ...f.allocatedBlocks] : f.allocatedBlocks
+  );
+
+  steps.push({
+    id: 2,
+    phase: 'Physical Reorganization',
+    title: `Physical Disk Sectors Reorganized under ${newMethod.toUpperCase()} Architecture`,
+    status: allSuccess ? 'completed' : 'failed',
+    whatHappened:
+      newMethod === 'contiguous'
+        ? `Consolidated all files into sequential contiguous sector extents. Start blocks recorded in root directory.`
+        : newMethod === 'linked'
+        ? `Embedded forward link pointers into each sector header. Files now terminate at EOF marker.`
+        : `Allocated dedicated yellow Index Blocks (IDX) storing direct block pointer tables.`,
+    whyItHappened: `Reflects the true hardware layout of ${newMethod.toUpperCase()} allocation on disk.`,
+    whatChanged: `Total active files: ${newFiles.length}/${files.length} successfully migrated. Allocated sectors: [${allAllocatedBlockIds.join(', ')}].`,
+    tradeOff: tradeOffMap[newMethod],
+    technicalDetails: `Active sector map: [${allAllocatedBlockIds.join(', ')}].`,
+    highlightedBlockIds: allAllocatedBlockIds,
+  });
+
+  return {
+    success: allSuccess,
+    disk: newDisk,
+    files: newFiles,
+    steps,
+    error: firstError,
+  };
+}

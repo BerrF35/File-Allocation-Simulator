@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { allocateContiguous, canExpandContiguous } from '../contiguous';
 import { allocateLinked } from '../linked';
 import { allocateIndexed } from '../indexed';
-import type { DiskBlock, SimConfig } from '../../types/simulator';
+import { migrateFilesToMethod } from '../simulatorEngine';
+import type { DiskBlock, FileRecord, SimConfig } from '../../types/simulator';
 
 function createMockDisk(totalBlocks = 32): DiskBlock[] {
   const blocks: DiskBlock[] = [];
@@ -161,5 +162,77 @@ describe('Indexed Allocation Algorithm', () => {
 
     expect(result.success).toBe(false);
     expect(result.failureCode).toBe('OUT_OF_SPACE');
+  });
+});
+
+describe('Dynamic Method Migration (migrateFilesToMethod)', () => {
+  const initialFiles: FileRecord[] = [
+    {
+      id: 'file-1',
+      name: 'notes.txt',
+      type: 'TXT',
+      sizeBytes: 1536,
+      requiredBlocks: 3,
+      totalBlocksAllocated: 3,
+      allocatedBlocks: [0, 1, 2],
+      startBlock: 0,
+      length: 3,
+      color: '#38bdf8',
+      tag: 'NOTE',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    },
+  ];
+
+  it('migrates Contiguous files to Indexed allocation with designated index block', () => {
+    const result = migrateFilesToMethod(initialFiles, 'indexed', 'contiguous', mockConfig);
+
+    expect(result.success).toBe(true);
+    expect(result.files.length).toBe(1);
+    const migrated = result.files[0];
+    expect(migrated.indexBlockId).toBeDefined();
+    expect(migrated.totalBlocksAllocated).toBe(4); // 3 data + 1 index block
+    expect(result.disk[migrated.indexBlockId!].state).toBe('index');
+    expect(result.disk[migrated.indexBlockId!].fileTag).toContain('IDX');
+    expect(result.disk[migrated.allocatedBlocks[0]].referencedByIndexBlock).toBe(migrated.indexBlockId);
+    expect(result.steps.length).toBe(2);
+  });
+
+  it('migrates Indexed files to Linked allocation with block pointer chain', () => {
+    // First get indexed file
+    const indexed = migrateFilesToMethod(initialFiles, 'indexed', 'contiguous', mockConfig);
+    // Now migrate to linked
+    const result = migrateFilesToMethod(indexed.files, 'linked', 'indexed', mockConfig);
+
+    expect(result.success).toBe(true);
+    const linked = result.files[0];
+    expect(linked.indexBlockId).toBeUndefined();
+    expect(linked.startBlock).toBe(0);
+    expect(linked.endBlock).toBe(2);
+    // Check block pointer chain
+    expect(result.disk[0].nextBlockId).toBe(1);
+    expect(result.disk[1].nextBlockId).toBe(2);
+    expect(result.disk[2].nextBlockId).toBeNull(); // EOF
+  });
+
+  it('migrates Linked files back to Contiguous allocation as sequential extents', () => {
+    const linked = migrateFilesToMethod(initialFiles, 'linked', 'contiguous', mockConfig);
+    const result = migrateFilesToMethod(linked.files, 'contiguous', 'linked', mockConfig);
+
+    expect(result.success).toBe(true);
+    const contiguous = result.files[0];
+    expect(contiguous.startBlock).toBe(0);
+    expect(contiguous.length).toBe(3);
+    expect(contiguous.allocatedBlocks).toEqual([0, 1, 2]);
+    expect(contiguous.indexBlockId).toBeUndefined();
+    expect(result.disk[0].state).toBe('data');
+    expect(result.disk[0].nextBlockId).toBeNull();
+  });
+
+  it('handles empty disk gracefully when switching methods', () => {
+    const result = migrateFilesToMethod([], 'indexed', 'contiguous', mockConfig);
+    expect(result.success).toBe(true);
+    expect(result.files.length).toBe(0);
+    expect(result.disk.every((b) => b.state === 'free')).toBe(true);
   });
 });

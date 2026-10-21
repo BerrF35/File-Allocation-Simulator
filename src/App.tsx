@@ -14,6 +14,7 @@ import {
   createInitialDisk,
   executeDeletePipeline,
   executeResizePipeline,
+  migrateFilesToMethod,
 } from './core/simulatorEngine';
 import { allocateContiguous } from './core/contiguous';
 import { allocateLinked } from './core/linked';
@@ -458,10 +459,25 @@ export const App: React.FC = () => {
   const handleSelectMethod = useCallback(
     (newMethod: AllocationMethod) => {
       if (newMethod === method) return;
+      const migration = migrateFilesToMethod(files, newMethod, method, config);
       setMethod(newMethod);
+      setBlocks(migration.disk);
+      setFiles(migration.files);
       setSelectedBlockId(null);
+      setPipelineSession({
+        operationType: 'save',
+        fileName: `Volume C: (${newMethod.toUpperCase()})`,
+        method: newMethod,
+        steps: migration.steps,
+        currentStepIndex: migration.steps.length - 1,
+        isSuccess: migration.success,
+        errorReason: migration.error,
+        timestamp: Date.now(),
+      });
+      setFirstSaveHappened(true);
+      setIsSplitView(true);
     },
-    [method]
+    [config, files, method]
   );
 
   // Handler: Load Preset Educational Scenario
@@ -553,6 +569,7 @@ export const App: React.FC = () => {
         onClose={() => setIsComparisonOpen(false)}
         files={files}
         config={config}
+        initialMethod={method}
       />
 
       <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
@@ -625,9 +642,11 @@ export const App: React.FC = () => {
         files={files}
         blocks={blocks}
         config={config}
+        method={method}
+        onSelectMethod={handleSelectMethod}
         onCreateFile={(params) => {
           if (params.method && params.method !== method) {
-            setMethod(params.method);
+            handleSelectMethod(params.method);
           }
           handleCreateFile({
             name: params.name,

@@ -9,6 +9,8 @@ interface WindowsTerminalProps {
   files: FileRecord[];
   blocks: DiskBlock[];
   config: SimConfig;
+  method: AllocationMethod;
+  onSelectMethod?: (method: AllocationMethod) => void;
   onCreateFile: (params: { name: string; method?: AllocationMethod; sizeBytes: number; content?: string }) => void;
   onDeleteFile: (file: FileRecord) => void;
   onOpenDefrag: () => void;
@@ -30,6 +32,8 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
   files,
   blocks,
   config,
+  method,
+  onSelectMethod,
   onCreateFile,
   onDeleteFile,
   onOpenDefrag,
@@ -95,6 +99,8 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
             <span>Display file contents and physical sector trace</span>
             <span style={{ color: '#38bdf8' }}>stat &lt;file&gt;</span>
             <span>Display Inode, LBA block map, and fragmentation stats</span>
+            <span style={{ color: '#38bdf8' }}>method [type]</span>
+            <span>Display or switch active allocation driver (contiguous | linked | indexed)</span>
             <span style={{ color: '#38bdf8' }}>touch &lt;name&gt; [bytes] [method]</span>
             <span>Allocate a new file (e.g. `touch doc.txt 1536 contiguous`)</span>
             <span style={{ color: '#38bdf8' }}>rm &lt;file&gt;</span>
@@ -247,7 +253,9 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
               ? 'linked'
               : args[2]?.toLowerCase() === 'indexed'
               ? 'indexed'
-              : 'contiguous';
+              : args[2]?.toLowerCase() === 'contiguous'
+              ? 'contiguous'
+              : method;
 
           onCreateFile({
             name,
@@ -261,6 +269,36 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
               sys_creat(&quot;{name}&quot;, {sizeBytes} bytes, {targetMethod.toUpperCase()}): File allocation requested successfully.
             </div>
           );
+        }
+        break;
+
+      case 'method':
+      case 'alloc':
+        if (!args[0]) {
+          outputNode = (
+            <div style={{ color: '#38bdf8' }}>
+              <div>Current secondary storage allocation strategy: <strong>{method.toUpperCase()}</strong></div>
+              <div style={{ color: '#94a3b8', marginTop: '4px' }}>
+                Usage: <code>method contiguous | linked | indexed</code> to switch storage drivers and reorganize sectors.
+              </div>
+            </div>
+          );
+        } else {
+          const target = args[0].toLowerCase();
+          if (target === 'contiguous' || target === 'linked' || target === 'indexed') {
+            if (target === method) {
+              outputNode = <div style={{ color: '#38bdf8' }}>Kernel driver already using <strong>{target.toUpperCase()}</strong> allocation.</div>;
+            } else {
+              onSelectMethod?.(target as AllocationMethod);
+              outputNode = (
+                <div style={{ color: '#10b981' }}>
+                  Kernel storage driver switched to <strong>{target.toUpperCase()}</strong>. Disk block matrix and active files migrated.
+                </div>
+              );
+            }
+          } else {
+            outputNode = <div style={{ color: '#f87171' }}>Invalid method: &apos;{args[0]}&apos;. Valid choices: contiguous, linked, indexed.</div>;
+          }
         }
         break;
 
@@ -443,7 +481,7 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
             <div key={idx} style={{ marginBottom: '10px' }}>
               {item.command && (
                 <div style={{ display: 'flex', gap: '8px', color: '#94a3b8' }}>
-                  <span style={{ color: '#38bdf8' }}>SimFS C:\Users\Student&gt;</span>
+                  <span style={{ color: '#38bdf8' }}>SimFS [{method.toUpperCase()}] C:\Users\Student&gt;</span>
                   <span style={{ color: '#f8fafc', fontWeight: 600 }}>{item.command}</span>
                 </div>
               )}
@@ -453,7 +491,7 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
 
           {/* Active Command Prompt Line */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
-            <span style={{ color: '#38bdf8', whiteSpace: 'nowrap' }}>SimFS C:\Users\Student&gt;</span>
+            <span style={{ color: '#38bdf8', whiteSpace: 'nowrap' }}>SimFS [{method.toUpperCase()}] C:\Users\Student&gt;</span>
             <input
               ref={inputRef}
               type="text"
