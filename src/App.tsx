@@ -39,6 +39,7 @@ import { WindowsStartMenu } from './components/WindowsStartMenu';
 import { DiskPlatterArmVisualizer } from './components/DiskPlatterArmVisualizer';
 import { DiskDefragmenterModal } from './components/DiskDefragmenterModal';
 import { WindowsTerminal } from './components/WindowsTerminal';
+import { MobileView } from './components/MobileView';
 
 const STORAGE_KEY = 'os_alloc_simulator_state_v2';
 
@@ -96,6 +97,21 @@ export const App: React.FC = () => {
   const [isPlatterOpen, setIsPlatterOpen] = useState(false);
   const [isDefragOpen, setIsDefragOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+  const [forceDesktopMode, setForceDesktopMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileViewport(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Save to localStorage whenever state changes
   useEffect(() => {
@@ -489,8 +505,211 @@ export const App: React.FC = () => {
     if (isStartMenuOpen) setIsStartMenuOpen(false);
   };
 
+  const renderSharedModals = () => (
+    <>
+      {/* Windows Notepad / File Allocation Dialog */}
+      <WindowsNewFileDialog
+        isOpen={isNewFileOpen}
+        onClose={() => setIsNewFileOpen(false)}
+        onSubmit={handleCreateFile}
+        activeMethod={method}
+        onSelectMethod={handleSelectMethod}
+        config={config}
+      />
+
+      {/* Auxiliary Modals */}
+      <ResizeFileDialog
+        isOpen={Boolean(resizeTargetFile)}
+        file={resizeTargetFile}
+        onClose={() => setResizeTargetFile(null)}
+        onSubmit={handleResizeFile}
+        method={method}
+        config={config}
+      />
+
+      <RenameFileDialog
+        isOpen={Boolean(renameTargetFile)}
+        file={renameTargetFile}
+        onClose={() => setRenameTargetFile(null)}
+        onSubmit={handleRenameFile}
+      />
+
+      <RecycleBinModal
+        isOpen={isRecycleBinOpen}
+        onClose={() => setIsRecycleBinOpen(false)}
+        recycledFiles={recycleBin}
+        onRestoreFile={handleRestoreFile}
+        onEmptyBin={handleEmptyBin}
+      />
+
+      <ScenariosModal
+        isOpen={isScenariosOpen}
+        onClose={() => setIsScenariosOpen(false)}
+        onSelectScenario={handleSelectScenario}
+      />
+
+      <ComparisonViewModal
+        isOpen={isComparisonOpen}
+        onClose={() => setIsComparisonOpen(false)}
+        files={files}
+        config={config}
+      />
+
+      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      {/* Windows 11 Start Menu Panel */}
+      <WindowsStartMenu
+        isOpen={isStartMenuOpen}
+        onClose={() => setIsStartMenuOpen(false)}
+        onOpenNewFile={() => setIsNewFileOpen(true)}
+        onOpenDefrag={() => setIsDefragOpen(true)}
+        onOpenTerminal={() => setIsTerminalOpen(true)}
+        onOpenPlatter={() => setIsPlatterOpen(true)}
+        onOpenBenchmark={() => setIsComparisonOpen(true)}
+        onOpenScenarios={() => setIsScenariosOpen(true)}
+        onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
+        onToggleSplitView={() => setIsSplitView(!isSplitView)}
+        onResetDisk={handleResetDisk}
+      />
+
+      {/* Mechanical Hard Disk Platter & Actuator Seek Arm Visualizer */}
+      <DiskPlatterArmVisualizer
+        isOpen={isPlatterOpen}
+        onClose={() => setIsPlatterOpen(false)}
+        blocks={blocks}
+        files={files}
+        config={config}
+        selectedFileId={selectedFileId}
+        onSelectFile={setSelectedFileId}
+        onSelectBlock={setSelectedBlockId}
+      />
+
+      {/* Drive Optimizer & Live Disk Defragmenter (Compaction) */}
+      <DiskDefragmenterModal
+        isOpen={isDefragOpen}
+        onClose={() => setIsDefragOpen(false)}
+        blocks={blocks}
+        files={files}
+        config={config}
+        onApplyDefrag={(newBlocks, newFiles) => {
+          setBlocks(newBlocks);
+          setFiles(newFiles);
+          setPipelineSession({
+            operationType: 'save',
+            fileName: 'Drive C: (Compacted)',
+            method,
+            steps: [
+              {
+                id: 1,
+                phase: 'compaction',
+                title: 'Drive Defragmentation & Compaction Finished',
+                status: 'completed',
+                whatHappened: 'Relocated all active files into continuous sequential LBA sectors starting from block 0.',
+                whyItHappened: 'Compaction eliminates external fragmentation by shifting all allocated blocks together, leaving one single consolidated free block segment.',
+                whatChanged: 'External fragmentation reduced to 0%. All allocated files are now contiguous.',
+                tradeOff: 'High computational and disk I/O overhead during reorganization, but delivers optimal sequential read performance thereafter.',
+                highlightedBlockIds: newFiles.flatMap((f) => f.allocatedBlocks),
+              },
+            ],
+            currentStepIndex: 0,
+            isSuccess: true,
+            timestamp: Date.now(),
+          });
+        }}
+      />
+
+      {/* Interactive OS Kernel PowerShell Terminal */}
+      <WindowsTerminal
+        isOpen={isTerminalOpen}
+        onClose={() => setIsTerminalOpen(false)}
+        files={files}
+        blocks={blocks}
+        config={config}
+        onCreateFile={(params) => {
+          if (params.method && params.method !== method) {
+            setMethod(params.method);
+          }
+          handleCreateFile({
+            name: params.name,
+            type: 'TXT',
+            sizeBytes: params.sizeBytes,
+            content: params.content,
+          });
+        }}
+        onDeleteFile={handleDeleteFile}
+        onOpenDefrag={() => setIsDefragOpen(true)}
+        onOpenBenchmark={() => setIsComparisonOpen(true)}
+        onOpenPlatter={() => setIsPlatterOpen(true)}
+      />
+    </>
+  );
+
+  // Dedicated Phone / Mobile Viewport
+  if (isMobileViewport && !forceDesktopMode) {
+    return (
+      <div className="os-mobile-wrapper">
+        <MobileView
+          method={method}
+          onSelectMethod={handleSelectMethod}
+          blocks={blocks}
+          files={files}
+          stats={stats}
+          config={config}
+          selectedFileId={selectedFileId}
+          onSelectFile={setSelectedFileId}
+          selectedBlockId={selectedBlockId}
+          onSelectBlock={setSelectedBlockId}
+          highlightedBlockIds={highlightedBlockIds}
+          pipelineSession={pipelineSession}
+          onOpenNewFile={() => setIsNewFileOpen(true)}
+          onOpenFile={(file) => setSelectedFileId(file.id)}
+          onDeleteFile={handleDeleteFile}
+          onResizeFile={(file) => setResizeTargetFile(file)}
+          onRenameFile={(file) => setRenameTargetFile(file)}
+          onOpenPlatter={() => setIsPlatterOpen(true)}
+          onOpenDefrag={() => setIsDefragOpen(true)}
+          onOpenTerminal={() => setIsTerminalOpen(true)}
+          onOpenComparison={() => setIsComparisonOpen(true)}
+          onOpenScenarios={() => setIsScenariosOpen(true)}
+          onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
+          onResetDisk={handleResetDisk}
+          onSwitchToDesktop={() => setForceDesktopMode(true)}
+        />
+        {renderSharedModals()}
+      </div>
+    );
+  }
+
   return (
     <div className="os-app-root" onClick={handleGlobalClick}>
+      {/* If testing desktop simulation on mobile screen, provide floating return button */}
+      {isMobileViewport && forceDesktopMode && (
+        <button
+          type="button"
+          onClick={() => setForceDesktopMode(false)}
+          style={{
+            position: 'fixed',
+            bottom: '56px',
+            right: '16px',
+            zIndex: 99999,
+            background: '#0284c7',
+            color: '#ffffff',
+            padding: '8px 14px',
+            borderRadius: '24px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+            fontSize: '12px',
+            fontWeight: 600,
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>📱 Return to Mobile View</span>
+        </button>
+      )}
+
       {/* Cinematic Split Layout Container */}
       <div className={`cinematic-split-layout ${isSplitView ? 'split-active' : 'desktop-only'}`}>
         {/* Left Side: The Authentic Windows Desktop Replica */}
@@ -686,140 +905,8 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Windows Notepad / File Allocation Dialog */}
-      <WindowsNewFileDialog
-        isOpen={isNewFileOpen}
-        onClose={() => setIsNewFileOpen(false)}
-        onSubmit={handleCreateFile}
-        activeMethod={method}
-        onSelectMethod={handleSelectMethod}
-        config={config}
-      />
-
-      {/* Auxiliary Modals */}
-      <ResizeFileDialog
-        isOpen={Boolean(resizeTargetFile)}
-        file={resizeTargetFile}
-        onClose={() => setResizeTargetFile(null)}
-        onSubmit={handleResizeFile}
-        method={method}
-        config={config}
-      />
-
-      <RenameFileDialog
-        isOpen={Boolean(renameTargetFile)}
-        file={renameTargetFile}
-        onClose={() => setRenameTargetFile(null)}
-        onSubmit={handleRenameFile}
-      />
-
-      <RecycleBinModal
-        isOpen={isRecycleBinOpen}
-        onClose={() => setIsRecycleBinOpen(false)}
-        recycledFiles={recycleBin}
-        onRestoreFile={handleRestoreFile}
-        onEmptyBin={handleEmptyBin}
-      />
-
-      <ScenariosModal
-        isOpen={isScenariosOpen}
-        onClose={() => setIsScenariosOpen(false)}
-        onSelectScenario={handleSelectScenario}
-      />
-
-      <ComparisonViewModal
-        isOpen={isComparisonOpen}
-        onClose={() => setIsComparisonOpen(false)}
-        files={files}
-        config={config}
-      />
-
-      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
-
-      {/* Windows 11 Start Menu Panel */}
-      <WindowsStartMenu
-        isOpen={isStartMenuOpen}
-        onClose={() => setIsStartMenuOpen(false)}
-        onOpenNewFile={() => setIsNewFileOpen(true)}
-        onOpenDefrag={() => setIsDefragOpen(true)}
-        onOpenTerminal={() => setIsTerminalOpen(true)}
-        onOpenPlatter={() => setIsPlatterOpen(true)}
-        onOpenBenchmark={() => setIsComparisonOpen(true)}
-        onOpenScenarios={() => setIsScenariosOpen(true)}
-        onOpenRecycleBin={() => setIsRecycleBinOpen(true)}
-        onToggleSplitView={() => setIsSplitView(!isSplitView)}
-        onResetDisk={handleResetDisk}
-      />
-
-      {/* Mechanical Hard Disk Platter & Actuator Seek Arm Visualizer */}
-      <DiskPlatterArmVisualizer
-        isOpen={isPlatterOpen}
-        onClose={() => setIsPlatterOpen(false)}
-        blocks={blocks}
-        files={files}
-        config={config}
-        selectedFileId={selectedFileId}
-        onSelectFile={setSelectedFileId}
-        onSelectBlock={setSelectedBlockId}
-      />
-
-      {/* Drive Optimizer & Live Disk Defragmenter (Compaction) */}
-      <DiskDefragmenterModal
-        isOpen={isDefragOpen}
-        onClose={() => setIsDefragOpen(false)}
-        blocks={blocks}
-        files={files}
-        config={config}
-        onApplyDefrag={(newBlocks, newFiles) => {
-          setBlocks(newBlocks);
-          setFiles(newFiles);
-          setPipelineSession({
-            operationType: 'save',
-            fileName: 'Drive C: (Compacted)',
-            method,
-            steps: [
-              {
-                id: 1,
-                phase: 'compaction',
-                title: 'Drive Defragmentation & Compaction Finished',
-                status: 'completed',
-                whatHappened: 'Relocated all active files into continuous sequential LBA sectors starting from block 0.',
-                whyItHappened: 'Compaction eliminates external fragmentation by shifting all allocated blocks together, leaving one single consolidated free block segment.',
-                whatChanged: 'External fragmentation reduced to 0%. All allocated files are now contiguous.',
-                tradeOff: 'High computational and disk I/O overhead during reorganization, but delivers optimal sequential read performance thereafter.',
-                highlightedBlockIds: newFiles.flatMap((f) => f.allocatedBlocks),
-              },
-            ],
-            currentStepIndex: 0,
-            isSuccess: true,
-            timestamp: Date.now(),
-          });
-        }}
-      />
-
-      {/* Interactive OS Kernel PowerShell Terminal */}
-      <WindowsTerminal
-        isOpen={isTerminalOpen}
-        onClose={() => setIsTerminalOpen(false)}
-        files={files}
-        blocks={blocks}
-        config={config}
-        onCreateFile={(params) => {
-          if (params.method && params.method !== method) {
-            setMethod(params.method);
-          }
-          handleCreateFile({
-            name: params.name,
-            type: 'TXT',
-            sizeBytes: params.sizeBytes,
-            content: params.content,
-          });
-        }}
-        onDeleteFile={handleDeleteFile}
-        onOpenDefrag={() => setIsDefragOpen(true)}
-        onOpenBenchmark={() => setIsComparisonOpen(true)}
-        onOpenPlatter={() => setIsPlatterOpen(true)}
-      />
+      {/* Shared Modals */}
+      {renderSharedModals()}
     </div>
   );
 };
