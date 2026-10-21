@@ -172,7 +172,7 @@ export const MobileView: React.FC<MobileViewProps> = ({
         </div>
 
         {/* Quick Tools Launch Strip */}
-        <div style={{ marginTop: '10px', display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+        <div style={{ marginTop: '10px', display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           <button
             type="button"
             className="mobile-quick-btn"
@@ -839,16 +839,18 @@ export const MobileView: React.FC<MobileViewProps> = ({
       </main>
 
       {/* Floating Action Button (FAB) for Creating New File */}
-      <button
-        type="button"
-        className="mobile-fab"
-        onClick={onOpenNewFile}
-        aria-label="Create New File"
-        title="Create New File"
-      >
-        <span style={{ fontSize: '22px', lineHeight: 1 }}>+</span>
-        <span style={{ fontSize: '12px', fontWeight: 700 }}>New File</span>
-      </button>
+      {(activeTab === 'disk' || activeTab === 'files') && (
+        <button
+          type="button"
+          className="mobile-fab"
+          onClick={onOpenNewFile}
+          aria-label="Create New File"
+          title="Create New File"
+        >
+          <span style={{ fontSize: '20px', lineHeight: 1 }}>+</span>
+          <span style={{ fontSize: '12px', fontWeight: 700 }}>New File</span>
+        </button>
+      )}
 
       {/* Bottom Touch Navigation Bar (48px+ touch targets) */}
       <nav className="mobile-bottom-nav">

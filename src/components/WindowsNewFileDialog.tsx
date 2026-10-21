@@ -101,7 +101,7 @@ export const WindowsNewFileDialog: React.FC<WindowsNewFileDialogProps> = ({
           </div>
 
           <div className="win-form-row">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
               <label className="win-label">File Size: {sizeKb} KB ({sizeBytes.toLocaleString()} Bytes)</label>
               <span className="win-badge-pill">
                 Requires <strong>{requiredBlocks}</strong> Disk Blocks ({config.blockSize}B each)
@@ -109,7 +109,7 @@ export const WindowsNewFileDialog: React.FC<WindowsNewFileDialogProps> = ({
               </span>
             </div>
 
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch' }}>
               {[1, 2, 4, 8, 16].map((kb) => (
                 <button
                   key={kb}

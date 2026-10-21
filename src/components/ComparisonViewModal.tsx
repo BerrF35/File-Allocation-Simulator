@@ -41,8 +41,8 @@ export const ComparisonViewModal: React.FC<ComparisonViewModalProps> = ({
           </p>
 
           {/* Comparative Table */}
-          <div style={{ border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            <table className="file-table" style={{ fontSize: '12.5px' }}>
+          <div style={{ border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table className="file-table" style={{ fontSize: '12.5px', minWidth: '480px' }}>
               <thead>
                 <tr>
                   <th style={{ width: '28%' }}>Metric</th>

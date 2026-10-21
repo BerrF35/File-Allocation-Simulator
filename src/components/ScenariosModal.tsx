@@ -37,6 +37,7 @@ export const ScenariosModal: React.FC<ScenariosModalProps> = ({
             {EDUCATIONAL_SCENARIOS.map((sc) => (
               <div
                 key={sc.id}
+                className="scenario-card"
                 style={{
                   border: '1px solid var(--border-light)',
                   borderRadius: 'var(--radius-md)',

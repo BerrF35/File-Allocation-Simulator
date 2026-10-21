@@ -2769,7 +2769,7 @@ code, pre, .font-mono {
 
 .mobile-content {
   flex: 1;
-  padding: 14px 14px 105px 14px;
+  padding: 14px 14px 140px 14px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -2894,6 +2894,18 @@ code, pre, .font-mono {
   font-weight: 600;
 }
 
+.platter-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.25fr) minmax(320px, 1fr);
+  gap: 18px;
+}
+
+.defrag-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
 /* Mobile Modal to Native Bottom Sheet Transformation */
 @media (max-width: 768px) {
   .modal-overlay {
@@ -2911,11 +2923,53 @@ code, pre, .font-mono {
     border-top-right-radius: 16px !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6) !important;
   }
+  .terminal-dialog {
+    height: 85vh !important;
+    max-height: 85vh !important;
+  }
   .modal-body {
     max-height: 68vh !important;
     overflow-y: auto !important;
     padding: 14px 12px !important;
     -webkit-overflow-scrolling: touch;
+  }
+  .platter-modal-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  .defrag-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .win-method-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+  .terminal-help-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+  .scenario-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .scenario-card button {
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .iso-plate-corners {
+    inset: 8px 10px !important;
+  }
+  .iso-plate-corner[data-corner="title"],
+  .iso-plate-corner[data-corner="hint"] {
+    display: none !important;
   }
 }
 

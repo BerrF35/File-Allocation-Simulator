@@ -88,7 +88,7 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
       case 'help':
       case '?':
         outputNode = (
-          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '4px 16px', color: '#cbd5e1' }}>
+          <div className="terminal-help-grid" style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '4px 16px', color: '#cbd5e1' }}>
             <span style={{ color: '#38bdf8' }}>dir / ls</span>
             <span>List all files in the directory table</span>
             <span style={{ color: '#38bdf8' }}>cat &lt;file&gt;</span>
@@ -365,7 +365,7 @@ export const WindowsTerminal: React.FC<WindowsTerminalProps> = ({
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-terminal">
       <div
-        className="modal-dialog"
+        className="modal-dialog terminal-dialog"
         style={{
           maxWidth: '820px',
           width: '92vw',

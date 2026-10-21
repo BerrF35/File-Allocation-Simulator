@@ -265,7 +265,7 @@ export const DiskDefragmenterModal: React.FC<DiskDefragmenterModalProps> = ({
           </div>
 
           {/* Metric Breakdown Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          <div className="defrag-metrics-grid">
             <div style={{ background: 'var(--bg-subtle)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
               <span className="text-xs text-muted" style={{ display: 'block' }}>Occupied Sectors</span>
               <strong style={{ fontSize: '16px', color: '#38bdf8' }}>{allocatedCount}</strong>

@@ -431,12 +431,12 @@ export const DiskPlatterArmVisualizer: React.FC<DiskPlatterArmVisualizerProps> =
         </div>
 
         {/* Modal Body */}
-        <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: 'minmax(420px, 1.25fr) minmax(320px, 1fr)', gap: '18px' }}>
+        <div className="modal-body platter-modal-grid">
           {/* Left Column: 3D Isometric Winchester HDD Visualizer */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {/* View Mode & Cylinder Track Quick Switch Bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px 10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="text-xs" style={{ color: '#94a3b8', fontWeight: 600 }}>Cylinders:</span>
                 {[0, 1, 2, 3].map((cyl) => (
                   <button
