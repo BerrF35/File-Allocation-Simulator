@@ -163,7 +163,18 @@ To present this project during an academic evaluation:
 1. **Initial Visit (Stage 1 Desktop):** Show the clean desktop environment with student info (`Jaijitesh Suryaprakash - 25BIT0235`), allocation method selector, and the contextual instruction **"Let's create your first file"**.
 2. **First File Creation (Stage 2):** Click **"Create Your First File"**. Show how entering a size of `1,450 Bytes` automatically computes `3 Data Blocks` and `86 Bytes` of internal fragmentation. Click **"Create & Save File"**.
 3. **Split View & Pipeline (Stage 3):** Demonstrate the transition into the split view. Step through the 7-stage OS pipeline (from `sys_open/write` through block translation, run scanning, reservation, directory registration, and disk commit). Highlight the 4 quadrants: **WHAT HAPPENED**, **WHY IT HAPPENED**, **WHAT CHANGED**, and **TRADE-OFF**.
-4. **Physical Sector Inspector:** Click on any allocated block on the disk grid to reveal the physical sector inspector drawer showing block offset, raw address, and metadata.
-5. **External Fragmentation Demonstration:** Click **"Scenarios"** in the top bar and select **"The Contiguous External Fragmentation Trap"**. Point out the warning banner indicating that although 12 free blocks exist, the largest contiguous run is only 3 blocks. Attempt to create a 5-block file and observe the explicit failure and atomic rollback.
-6. **Solution Demonstration:** Switch the method selector from **Contiguous** to **Linked** or **Indexed**, and create the exact same 5-block file to show how non-contiguous allocation effortlessly harvests the scattered gaps.
-7. **Multi-Method Comparison:** Click **"3× Compare Methods"** to show the live comparison matrix comparing success rates, total blocks consumed (including Index Block overhead), utilization, read speed, and fragmentation across all three methods simultaneously.
+4. **Physical Sector Inspector & Hex Dumper:** Click on any allocated block on the disk grid to reveal the physical sector inspector drawer and raw 16-byte hex memory dump with CHS coordinates.
+5. **3D Winchester Hard Disk Platter:** Click **"💽 Platter"** to open the solid 3D isometric model showing dual platters rotating at 7,200 RPM and the Voice Coil Motor actuator arm seeking to the selected sector's cylinder.
+6. **Drive Optimizer & Defragmentation:** Click **"⚡ Defrag"** to run live volume compaction, packing scattered files into consecutive low-LBA blocks and consolidating free space.
+7. **Interactive PowerShell Terminal:** Click **"💻 Terminal"** to launch `SimFS` shell. Run `dir`, `stat`, `chs`, and `method linked` to demonstrate low-level OS operations.
+8. **External Fragmentation Demonstration:** Click **"Scenarios"** in the top bar and select **"The Contiguous External Fragmentation Trap"**. Point out the warning banner indicating that although 12 free blocks exist, the largest contiguous run is only 3 blocks. Attempt to create a 5-block file and observe the explicit failure and atomic rollback.
+9. **Dynamic Method Migration:** Switch the method selector from **Contiguous** to **Linked** or **Indexed**, and watch the entire physical partition, VFS translators, and sector badges dynamically reorganize in real time.
+10. **Multi-Method Comparison:** Click **"3× Compare Methods"** to show the live comparison matrix comparing success rates, total blocks consumed (including Index Block overhead), utilization, read speed, and fragmentation across all three methods simultaneously.
+
+---
+
+## 7. Comprehensive Engineering Report
+
+For an exhaustive, publication-grade technical analysis detailing every single mathematical formula, algorithm implementation, physical hardware geometry, test suite, and architectural decision, please see:
+📖 **[PROJECT_COMPLETE_TECHNICAL_REPORT.md](./PROJECT_COMPLETE_TECHNICAL_REPORT.md)** (Full 14-Section Technical Treatise)
+
